@@ -22,4 +22,5 @@ urlpatterns = [
     path('delete/', views.Userlist.as_view()),
     path('showConditions/', views.ShowCondition.as_view()),
     path('deleteConditions/', views.DeleteCondition.as_view()),
+    path('index/', views.Level.as_view()),
 ]
