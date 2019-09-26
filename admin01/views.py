@@ -24,10 +24,7 @@ class Userlist(APIView):
         return Response(u.data)
 
 
-class ConditionSerializersModel(serializers.ModelSerializer):
-    class Meta:
-        model = UserLevelCondition
-        fields = '__all__'
+
 
 
 class ShowCondition(APIView):
@@ -57,3 +54,36 @@ class DeleteCondition(APIView):
             ret['code'] = 601
             ret['message'] = '数据库错误'
         return Response(ret)
+
+
+class Level(APIView):
+    def post(self, request):
+        ser = LevelSerializer(data=request.data)
+        mes = {}
+        if ser.is_valid():
+            ser.save()
+            mes['code'] = 200
+            mes['message'] = '成功'
+            mes['data'] = ser.data
+        else:
+            print(ser.errors)
+            mes['code'] = 400
+            mes['message'] = '失败'
+        return Response(mes)
+
+    def put(self, request):  # todo 修改
+        content = request.data
+        id = int(content['id'])                           # 获取点击后的内容id
+        c1 = UserLevel.objects.get(id=id)
+        c = LevelSerializer(c1, data=content)
+
+        mes = {}
+        if c.is_valid():
+            c.save()
+            mes['code'] = 200
+            mes['message'] = 'ok'
+        else:
+            print(c.errors)
+            mes['code'] = 10020
+            mes['message'] = '失败'
+        return Response(mes)
