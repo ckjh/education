@@ -23,4 +23,7 @@ urlpatterns = [
     path('showConditions/', views.ShowCondition.as_view()),
     path('deleteConditions/', views.DeleteCondition.as_view()),
     path('index/', views.Level.as_view()),
+    path('login/', views.AdminLogin.as_view()),
+    path('addLevel/', views.AddLevel.as_view()),
+    path('addCondition/',views.UserLevelConditionView.as_view())
 ]
