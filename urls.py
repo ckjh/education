@@ -17,13 +17,9 @@ from django.contrib import admin
 from django.urls import path
 from admin01 import views
 
+app_name = 'admin01'
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('delete/', views.Userlist.as_view()),
-    path('showConditions/', views.ShowCondition.as_view()),
-    path('deleteConditions/', views.DeleteCondition.as_view()),
-    path('index/', views.Level.as_view()),
-    path('login/', views.AdminLogin.as_view()),
-    path('addLevel/', views.AddLevel.as_view()),
-    path('addCondition/',views.UserLevelConditionView.as_view())
+    path('tag/', views.TagAPIView.as_view()),  # 课程标签管理
+    path('level/', views.LevelAPIView.as_view()),  # 会员等级管理
+    path('condition/', views.ConditionAPIView.as_view()),  # 会员条件管理
 ]
