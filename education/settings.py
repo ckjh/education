@@ -83,6 +83,14 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': 'root',
         'NAME': 'education'
+    },
+    'slave': {
+        'ENGINE': 'django.db.backends.mysql',
+        'HOST': '106.13.222.216',  # 数据库主机
+        'PORT': 3306,  # 数据库端口
+        'USER': 'root',  # 数据库用户名
+        'PASSWORD': 'root',  # 数据库用户密码
+        'NAME': 'education'  # 数据库名字
     }
 }
 
@@ -145,3 +153,6 @@ JWT_AUTH = {
     # 'JWT_RESPONSE_PAYLOAD_HANDLER': 'user.utils.jwt_response_payload_handler',  # 自定义响应内容,指定user子应用下,的utils.py文件
 }
 AUTH_USER_MODEL = 'admin01.User'  # 指定用户表
+DATABASE_ROUTERS = ['utils.db_router.MasterSlaveRouter']
+
+
