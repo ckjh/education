@@ -191,3 +191,66 @@ class ConditionAPIView(APIView):
             ret['code'] = 601
             ret['message'] = '数据库错误'
         return Response(ret)
+
+
+class SiteMessageAPIView(APIView):
+    def post(self, request):  # 添加等级
+        ret = {}
+        try:
+            data = request.data
+            ser = SiteMessageSerializers(data=data)
+            if ser.is_valid():
+                ser.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(ser.errors)
+                ret['code'] = 601
+                ret['message'] = '失败'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def delete(self, request):  # 删除等级
+        ret = {}
+        try:
+            data = request.data
+            SiteMessage.objects.get(id=data['id']).delete()
+            ret['code'] = 200
+            ret['message'] = '成功'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def put(self, request):  # 修改等级
+        ret = {}
+        try:
+            data = request.data
+            c1 = SiteMessage.objects.get(id=request.data['id'])
+            ser = SiteMessageSerializers(c1, data=data)
+            if ser.is_valid():
+                ser.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(ser.errors)
+                ret['code'] = 601
+                ret['message'] = '失败'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def get(self, request):  # 展示标签
+        ret = {}
+        levels = SiteMessage.objects.all()
+        levels = SiteMessageSerializersModel(levels, many=True)
+        ret['levels'] = levels.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
