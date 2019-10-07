@@ -22,5 +22,6 @@ urlpatterns = [
     path('tag/', views.TagAPIView.as_view()),  # 课程标签管理
     path('level/', views.LevelAPIView.as_view()),  # 会员等级管理
     path('condition/', views.ConditionAPIView.as_view()),  # 会员条件管理
-    path('siteMessage/', views.SiteMessageAPIView.as_view()),
+    path('siteMessage/', views.SiteMessageAPIView.as_view()),  # 站内信管理
+    path('path/', views.PathAPIView.as_view()),  # 路径管理
 ]
