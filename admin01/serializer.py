@@ -57,11 +57,39 @@ class SiteMessageSerializers(serializers.Serializer):
     content = serializers.CharField()
 
     def create(self, data):
-        m = UserLevelCondition.objects.create(**data)
+        m = SiteMessage.objects.create(**data)
         return m
 
     def update(self, instance, validated_data):
         instance.title = validated_data['title']
         instance.content = validated_data['content']
+        instance.save()
+        return instance
+
+
+# 路径系列化类
+
+class PathSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = Path
+        fields = '__all__'
+
+
+# 路径反序列化类
+class PathSerializers(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    pic = serializers.CharField(max_length=255)
+    info = serializers.CharField(max_length=255)
+    study_num = serializers.IntegerField()
+
+    def create(self, data):
+        m = Path.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data['name']
+        instance.pic = validated_data['pic']
+        instance.info = validated_data['info']
+        instance.study_num = validated_data['study_num']
         instance.save()
         return instance
