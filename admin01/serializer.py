@@ -1,4 +1,4 @@
-from rest_framework import serializers
+﻿from rest_framework import serializers
 from admin01.models import *
 
 
@@ -93,3 +93,25 @@ class PathSerializers(serializers.Serializer):
         instance.study_num = validated_data['study_num']
         instance.save()
         return instance
+
+#阶段的序列化
+class PathStageSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = PathStage
+        fields = '__all__'
+
+#阶段的反序列化
+class PathStageSerializers(serializers.Serializer):
+    path_id = serializers.IntegerField()
+    sort = serializers.IntegerField()
+
+    def create(self, data):
+        m = PathStage.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.path_id = validated_data['path_id']
+        instance.sort = validated_data['sort']
+        instance.save()
+        return instance
+
