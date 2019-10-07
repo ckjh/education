@@ -193,8 +193,9 @@ class ConditionAPIView(APIView):
         return Response(ret)
 
 
+# 站内信管理
 class SiteMessageAPIView(APIView):
-    def post(self, request):  # 添加等级
+    def post(self, request):  # 添加站内信
         ret = {}
         try:
             data = request.data
@@ -213,7 +214,7 @@ class SiteMessageAPIView(APIView):
             ret['message'] = '数据库错误'
         return Response(ret)
 
-    def delete(self, request):  # 删除等级
+    def delete(self, request):  # 删除站内信
         ret = {}
         try:
             data = request.data
@@ -226,7 +227,7 @@ class SiteMessageAPIView(APIView):
             ret['message'] = '数据库错误'
         return Response(ret)
 
-    def put(self, request):  # 修改等级
+    def put(self, request):  # 修改站内信
         ret = {}
         try:
             data = request.data
@@ -246,7 +247,7 @@ class SiteMessageAPIView(APIView):
             ret['message'] = '数据库错误'
         return Response(ret)
 
-    def get(self, request):  # 展示标签
+    def get(self, request):  # 展示站内信
         ret = {}
         levels = SiteMessage.objects.all()
         levels = SiteMessageSerializersModel(levels, many=True)
@@ -254,3 +255,76 @@ class SiteMessageAPIView(APIView):
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
+
+
+# 路径管理
+class PathAPIView(APIView):
+    def post(self, request):  # 添加路径
+        ret = {}
+        try:
+            data = request.data.copy()
+            # 图片上传逻辑
+            data['pic'] = get_pic_url(data['pic'])
+            ser = PathSerializers(data=data)
+            if ser.is_valid():
+                ser.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(ser.errors)
+                ret['code'] = 601
+                ret['message'] = '失败'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def delete(self, request):  # 删除路径
+        ret = {}
+        try:
+            data = request.data
+            Path.objects.get(id=data['id']).delete()
+            ret['code'] = 200
+            ret['message'] = '成功'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def put(self, request):  # 修改路径
+        ret = {}
+        try:
+            data = request.data.copy()
+            data['pic'] = get_pic_url(data['pic'])
+            c1 = Path.objects.get(id=request.data['id'])
+            ser = PathSerializers(c1, data=data)
+            if ser.is_valid():
+                ser.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(ser.errors)
+                ret['code'] = 601
+                ret['message'] = '失败'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def get(self, request):  # 展示路径
+        ret = {}
+        levels = Path.objects.all()
+        levels = PathSerializersModel(levels, many=True)
+        ret['levels'] = levels.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+
+def get_pic_url(pic):
+    # 获取图片路径的逻辑
+    pic_url = ''
+    return pic_url
