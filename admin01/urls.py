@@ -24,4 +24,5 @@ urlpatterns = [
     path('condition/', views.ConditionAPIView.as_view()),  # 会员条件管理
     path('siteMessage/', views.SiteMessageAPIView.as_view()),  # 站内信管理
     path('path/', views.PathAPIView.as_view()),  # 路径管理
+    path('stage/', views.PathstageView.as_view())
 ]

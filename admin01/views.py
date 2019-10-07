@@ -1,12 +1,16 @@
-﻿from django.shortcuts import render
+﻿import os
+
+from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 # Create your views here.
 from admin01.serializer import *
 from django.core.paginator import Paginator
 
-
 # 用户等级管理
+from education import settings
+
+
 class LevelAPIView(APIView):
     def post(self, request):  # 添加等级
         ret = {}
@@ -264,7 +268,8 @@ class PathAPIView(APIView):
         try:
             data = request.data.copy()
             # 图片上传逻辑
-            data['pic'] = get_pic_url(data['pic'])
+            print(data, '==============')
+            data['pic'] = get_pic_url(data['image'])
             ser = PathSerializers(data=data)
             if ser.is_valid():
                 ser.save()
@@ -297,7 +302,7 @@ class PathAPIView(APIView):
         ret = {}
         try:
             data = request.data.copy()
-            data['pic'] = get_pic_url(data['pic'])
+            data['pic'] = get_pic_url(data['image'])
             c1 = Path.objects.get(id=request.data['id'])
             ser = PathSerializers(c1, data=data)
             if ser.is_valid():
@@ -324,15 +329,32 @@ class PathAPIView(APIView):
         return Response(ret)
 
 
+from fdfs_client.client import Fdfs_client
+
+
 def get_pic_url(pic):
     # 获取图片路径的逻辑
-    pic_url = ''
-    return pic_url
+    file = pic
+    # print(pic)
+    # client = Fdfs_client("client.conf")
+    # ret=client.upload_by_buffer(pic)
+    # # ret = client.upload_by_filename('1.jpg')
+    # print(ret,'========================')
+    # return ret
+    if file:
+        # f = open(os.path.join(settings.UPLOAD_ROOT,'',file.name),'wb')
+        f = open(os.path.join(settings.STATICFILES_DIRS[0], file.name), 'wb')
+        for chunk in file.chunks():
+            f.write(chunk)
+        f.close()
 
-#阶段的增删改查
+    return settings.PIC_URL + file.name
+
+
+# 阶段的增删改查
 class PathstageView(APIView):
-    #展示
-    def get(self,request):
+    # 展示
+    def get(self, request):
         ret = {}
         try:
             tags = PathStage.objects.all()
@@ -345,11 +367,12 @@ class PathstageView(APIView):
             ret['code'] = 601
             ret['message'] = '数据库错误'
         return Response(ret)
-#增加
-    def post(self,request):
+
+    # 增加
+    def post(self, request):
         mes = {}
         try:
-            ser = PathStageSerializersModel(data=request.data)
+            ser = PathStageSerializers(data=request.data)
             if ser.is_valid():
                 ser.save()
                 mes['code'] = 200
@@ -364,8 +387,9 @@ class PathstageView(APIView):
             mes['code'] = 601
             mes['message'] = '数据库错误'
         return Response(mes)
-        #修改
-    def put(self,request):
+        # 修改
+
+    def put(self, request):
         mes = {}
         try:
             id = request.data['id']
@@ -384,8 +408,9 @@ class PathstageView(APIView):
             mes['code'] = 601
             mes['message'] = '数据库错误'
         return Response(mes)
-    #删除
-    def delete(self,request):
+
+    # 删除
+    def delete(self, request):
         mes = {}
         try:
             data = request.data
@@ -397,6 +422,3 @@ class PathstageView(APIView):
             mes['code'] = 601
             mes['message'] = '数据库错误'
         return Response(mes)
-
-
-

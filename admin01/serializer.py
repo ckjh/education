@@ -80,7 +80,7 @@ class PathSerializers(serializers.Serializer):
     name = serializers.CharField(max_length=50)
     pic = serializers.CharField(max_length=255)
     info = serializers.CharField(max_length=255)
-    study_num = serializers.IntegerField()
+    study_num = serializers.IntegerField(default=0)
 
     def create(self, data):
         m = Path.objects.create(**data)
@@ -94,13 +94,18 @@ class PathSerializers(serializers.Serializer):
         instance.save()
         return instance
 
-#阶段的序列化
+
+# 阶段的序列化
 class PathStageSerializersModel(serializers.ModelSerializer):
+    path_name = serializers.CharField(source='path.name')
+    path_id = serializers.CharField()
+
     class Meta:
         model = PathStage
         fields = '__all__'
 
-#阶段的反序列化
+
+# 阶段的反序列化
 class PathStageSerializers(serializers.Serializer):
     path_id = serializers.IntegerField()
     sort = serializers.IntegerField()
@@ -114,4 +119,3 @@ class PathStageSerializers(serializers.Serializer):
         instance.sort = validated_data['sort']
         instance.save()
         return instance
-
