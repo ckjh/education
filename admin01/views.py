@@ -249,9 +249,9 @@ class SiteMessageAPIView(APIView):
 
     def get(self, request):  # 展示站内信
         ret = {}
-        levels = SiteMessage.objects.all()
-        levels = SiteMessageSerializersModel(levels, many=True)
-        ret['levels'] = levels.data
+        dataList = SiteMessage.objects.all()
+        dataList = SiteMessageSerializersModel(dataList, many=True)
+        ret['levels'] = dataList.data
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
@@ -316,9 +316,9 @@ class PathAPIView(APIView):
 
     def get(self, request):  # 展示路径
         ret = {}
-        levels = Path.objects.all()
-        levels = PathSerializersModel(levels, many=True)
-        ret['levels'] = levels.data
+        dataList = Path.objects.all()
+        dataList = PathSerializersModel(dataList, many=True)
+        ret['dataList'] = dataList.data
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
