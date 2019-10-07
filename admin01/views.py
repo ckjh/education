@@ -1,4 +1,4 @@
-from django.shortcuts import render
+﻿from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 # Create your views here.
@@ -328,3 +328,75 @@ def get_pic_url(pic):
     # 获取图片路径的逻辑
     pic_url = ''
     return pic_url
+
+#阶段的增删改查
+class PathstageView(APIView):
+    #展示
+    def get(self,request):
+        ret = {}
+        try:
+            tags = PathStage.objects.all()
+            tags = PathStageSerializersModel(tags, many=True)
+            ret['tags'] = tags.data
+            ret['code'] = 200
+            ret['message'] = '成功'
+        except Exception as ex:
+            print(ex)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+#增加
+    def post(self,request):
+        mes = {}
+        try:
+            ser = PathStageSerializersModel(data=request.data)
+            if ser.is_valid():
+                ser.save()
+                mes['code'] = 200
+                mes['message'] = '成功'
+                mes['data'] = ser.data
+            else:
+                print(ser.errors)
+                mes['code'] = 601
+                mes['message'] = '失败'
+        except Exception as ex:
+            print(ex)
+            mes['code'] = 601
+            mes['message'] = '数据库错误'
+        return Response(mes)
+        #修改
+    def put(self,request):
+        mes = {}
+        try:
+            id = request.data['id']
+            c1 = PathStage.objects.get(id=id)
+            ser = PathStageSerializers(c1, data=request.data)
+            if ser.is_valid():
+                ser.save()
+                mes['code'] = 200
+                mes['message'] = '成功'
+                mes['data'] = ser.data
+            else:
+                print(ser.errors)
+                mes['code'] = 601
+                mes['message'] = '失败'
+        except Exception as es:
+            mes['code'] = 601
+            mes['message'] = '数据库错误'
+        return Response(mes)
+    #删除
+    def delete(self,request):
+        mes = {}
+        try:
+            data = request.data
+            PathStage.objects.get(id=data['id']).delete()
+            mes['code'] = 200
+            mes['message'] = '成功'
+        except Exception as es:
+            print(es)
+            mes['code'] = 601
+            mes['message'] = '数据库错误'
+        return Response(mes)
+
+
+
