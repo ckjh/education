@@ -42,3 +42,26 @@ class TagSerializersModel(serializers.ModelSerializer):
     class Meta:
         model = Tag
         fields = '__all__'
+
+
+# 站内信的序列化类
+class SiteMessageSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = SiteMessage
+        fields = '__all__'
+
+
+# 站内信的反系列化类
+class SiteMessageSerializers(serializers.Serializer):
+    title = serializers.CharField(max_length=50)
+    content = serializers.CharField()
+
+    def create(self, data):
+        m = UserLevelCondition.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data['title']
+        instance.content = validated_data['content']
+        instance.save()
+        return instance
