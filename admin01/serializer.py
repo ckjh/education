@@ -255,7 +255,6 @@ class PriceSerializersModel(serializers.ModelSerializer):
         model = Price
         fields = '__all__'
 
-
 class PriceSerializers(serializers.Serializer):
     type = serializers.IntegerField()
     course_id = serializers.IntegerField()

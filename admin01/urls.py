@@ -28,5 +28,6 @@ urlpatterns = [
     path('teacher/', views.TeacherAPIView.as_view()),  # 讲师管理
     path('course/', views.CourseAPIView.as_view()),  # 课程管理
     path('price/', views.SetPriceAPIView.as_view()),
-    path('video/', views.Video.as_view())
+    path('video/', views.Video.as_view()),
+    path('section/',views.SectionView.as_view())
 ]

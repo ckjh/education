@@ -1,5 +1,5 @@
 ﻿import os
-
+from uuid import uuid1
 from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -82,6 +82,7 @@ class TagAPIView(APIView):
         ret = {}
         try:
             data = request.data
+
             Tag.objects.get(id=data['id']).delete()
             ret['code'] = 200
             ret['message'] = '成功'
@@ -288,7 +289,12 @@ class PathAPIView(APIView):
         ret = {}
         try:
             data = request.data
-            Path.objects.get(id=data['id']).delete()
+            t = Path.objects.get(id=id)
+            try:
+                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+            except:
+                pass
+            t.delete()
             ret['code'] = 200
             ret['message'] = '成功'
         except Exception as es:
@@ -339,12 +345,13 @@ def get_pic_url(pic):
     # print(ret,'========================')
     # return ret
     if type(file) is not type(''):
+        name = str(uuid1()) + file.name
         # f = open(os.path.join(settings.UPLOAD_ROOT,'',file.name),'wb')
-        f = open(os.path.join(settings.STATICFILES_DIRS[0], file.name), 'wb')
+        f = open(os.path.join(settings.STATICFILES_DIRS[0], name), 'wb')
         for chunk in file.chunks():
             f.write(chunk)
         f.close()
-        return settings.PIC_URL + file.name
+        return settings.PIC_URL + name
     else:
         return file
 
@@ -455,7 +462,12 @@ class CourseAPIView(APIView):
         ret = {}
         try:
             data = request.data
-            Course.objects.get(id=data['id']).delete()
+            t = Course.objects.get(id=id)
+            try:
+                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+            except:
+                pass
+            t.delete()
             ret['code'] = 200
             ret['message'] = '成功'
         except Exception as es:
@@ -516,9 +528,15 @@ class TeacherAPIView(APIView):
 
     def delete(self, request):
         id = request.data['id']
+
         mes = {}
         if id:
-            Teacher.objects.get(id=id).delete()
+            t = Teacher.objects.get(id=id)
+            try:
+                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+            except:
+                pass
+            t.delete()
             mes['code'] = 200
             mes['msg'] = "删除成功"
         else:
@@ -571,7 +589,7 @@ class SectionView(APIView):
     def post(self, request):
         mes = {}
         data = request.data
-        data['video'] = get_pic_url(data['video'])
+        # data['video'] = get_pic_url(data['video'])
         if data:
             s = SectionSerializers(data=data)
             if s.is_valid():
@@ -608,16 +626,18 @@ class SectionView(APIView):
         id = request.data['id']
         mes = {}
         if id:
-            Section.objects.get(id=id).delete()
+            t = Section.objects.get(id=id)
+            try:
+                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+            except:
+                pass
+            t.delete()
             mes['code'] = 200
             mes['msg'] = "删除成功"
         else:
             mes['code'] = 400
             mes['msg'] = "删除失败"
         return Response(mes)
-
-
-
 
 
 # 价格

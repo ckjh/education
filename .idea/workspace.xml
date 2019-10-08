@@ -6,6 +6,9 @@
       <change beforePath="$PROJECT_DIR$/admin01/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/serializer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/admin01/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/admin01/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/1.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/2.jpg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/8D88AFFB8F49F5FA24B387807F18AB1E.gif" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -181,7 +184,8 @@
       <workItem from="1570368894481" duration="92000" />
       <workItem from="1570371010722" duration="2185000" />
       <workItem from="1570456808635" duration="5304000" />
-      <workItem from="1570489573486" duration="37457000" />
+      <workItem from="1570489573486" duration="40656000" />
+      <workItem from="1570543584093" duration="3582000" />
     </task>
     <servers />
   </component>
