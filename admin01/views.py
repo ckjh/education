@@ -435,7 +435,7 @@ class CourseAPIView(APIView):
         try:
             data = request.data.copy()
             # 图片上传逻辑
-            data['pic'] = get_pic_url(data['image'])
+            data['pic'] = get_pic_url(data['pic'])
             ser = CourseSerializers(data=data)
             if ser.is_valid():
                 ser.save()
@@ -468,7 +468,7 @@ class CourseAPIView(APIView):
         ret = {}
         try:
             data = request.data.copy()
-            data['pic'] = get_pic_url(data['image'])
+            data['pic'] = get_pic_url(data['pic'])
             c1 = Course.objects.get(id=request.data['id'])
             ser = CourseSerializers(c1, data=data)
             if ser.is_valid():
@@ -498,7 +498,7 @@ class CourseAPIView(APIView):
 class TeacherAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
-        data['pic'] = get_pic_url(data['image'])
+        data['pic'] = get_pic_url(data['pic'])
         ser = TeacherSerializers(data=data)
         mes = {}
         if ser.is_valid():
