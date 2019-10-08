@@ -269,7 +269,7 @@ class PathAPIView(APIView):
             data = request.data.copy()
             # 图片上传逻辑
             print(data, '==============')
-            data['pic'] = get_pic_url(data['image'])
+            data['pic'] = get_pic_url(data['pic'])
             ser = PathSerializers(data=data)
             if ser.is_valid():
                 ser.save()
@@ -302,7 +302,7 @@ class PathAPIView(APIView):
         ret = {}
         try:
             data = request.data.copy()
-            data['pic'] = get_pic_url(data['image'])
+            data['pic'] = get_pic_url(data['pic'])
             c1 = Path.objects.get(id=request.data['id'])
             ser = PathSerializers(c1, data=data)
             if ser.is_valid():
@@ -498,6 +498,7 @@ class CourseAPIView(APIView):
 class TeacherAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
+        print(data)
         data['pic'] = get_pic_url(data['pic'])
         ser = TeacherSerializers(data=data)
         mes = {}
@@ -527,7 +528,7 @@ class TeacherAPIView(APIView):
     def put(self, request):
         data = request.data.copy()
         print(data)
-        data['pic'] = get_pic_url(data['image'])
+        data['pic'] = get_pic_url(data['pic'])
         c1 = Teacher.objects.get(id=data['id'])
         ser = TeacherSerializers(c1, data=data)
         mes = {}
