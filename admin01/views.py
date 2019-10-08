@@ -422,3 +422,127 @@ class PathstageView(APIView):
             mes['code'] = 601
             mes['message'] = '数据库错误'
         return Response(mes)
+
+
+# 课程管理
+class CourseAPIView(APIView):
+    def post(self, request):  # 添加 课程
+        ret = {}
+        try:
+            data = request.data.copy()
+            # 图片上传逻辑
+            data['pic'] = get_pic_url(data['image'])
+            ser = CourseSerializers(data=data)
+            if ser.is_valid():
+                ser.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(ser.errors)
+                ret['code'] = 601
+                ret['message'] = '失败'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def delete(self, request):  # 删除课程
+        ret = {}
+        try:
+            data = request.data
+            Course.objects.get(id=data['id']).delete()
+            ret['code'] = 200
+            ret['message'] = '成功'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def put(self, request):  # 修改课程
+        ret = {}
+        try:
+            data = request.data.copy()
+            data['pic'] = get_pic_url(data['image'])
+            c1 = Course.objects.get(id=request.data['id'])
+            ser = CourseSerializers(c1, data=data)
+            if ser.is_valid():
+                ser.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(ser.errors)
+                ret['code'] = 601
+                ret['message'] = '失败'
+        except Exception as es:
+            print(es)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def get(self, request):  # 展示课程
+        ret = {}
+        dataList = Course.objects.all()
+        dataList = CourseSerializersModel(dataList, many=True)
+        ret['dataList'] = dataList.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+
+class TeacherAPIView(APIView):
+    def post(self, request):
+        data = request.data
+        data['pic'] = get_pic_url(data['image'])
+        ser = TeacherSerializers(data=data)
+        mes = {}
+        if ser.is_valid():
+            ser.save()
+            mes['code'] = 200
+            mes['msg'] = 'ok'
+            mes['data'] = ser.data
+
+        else:
+            print(ser.errors)
+            mes['code'] = 400
+            mes['msg'] = '失败'
+        return Response(mes)
+
+    def delete(self, request):
+        id = request.data['id']
+        mes = {}
+        if id:
+            Teacher.objects.get(id=id).delete()
+            mes['code'] = 200
+            mes['msg'] = "删除成功"
+        else:
+            mes['code'] = 400
+            mes['msg'] = "删除失败"
+        return Response(mes)
+
+    def put(self, request):
+        data = request.data
+        print(data)
+        data['pic'] = get_pic_url(data['image'])
+        c1 = Teacher.objects.get(id=data['id'])
+        ser = TeacherSerializers(c1, data=data)
+        mes = {}
+        if ser.is_valid():
+            ser.save()
+            mes['code'] = 200
+            mes['msg'] = 'ok'
+            mes['data'] = ser.data
+
+        else:
+            print(ser.errors)
+            mes['code'] = 400
+            mes['msg'] = '失败'
+        return Response(mes)
+
+    def get(self, request):
+        tea = Teacher.objects.all()
+        u = TeacherSerializersModel(tea, many=True)
+        mes = {}
+        mes['name'] = u.data
+        return Response(mes)

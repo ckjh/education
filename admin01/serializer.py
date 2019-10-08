@@ -119,3 +119,82 @@ class PathStageSerializers(serializers.Serializer):
         instance.sort = validated_data['sort']
         instance.save()
         return instance
+
+
+# 课程序列化
+class CourseSerializersModel(serializers.ModelSerializer):
+    teacher = serializers.CharField(source='teacher.name')
+    path = serializers.CharField(source='pathstage.name')
+    tag = serializers.CharField(source='tag.name')
+    teacher_id = serializers.IntegerField()
+    path_id = serializers.IntegerField()
+    tag_id = serializers.IntegerField()
+
+    class Meta:
+        model = Course
+        fields = '__all__'
+
+
+# 课程反序列化
+class CourseSerializers(serializers.Serializer):
+    title = serializers.CharField(max_length=50)
+    pic = serializers.CharField(max_length=255)
+    info = serializers.CharField(max_length=255)
+    teacher_id = serializers.IntegerField()
+    path_id = serializers.IntegerField()
+    online = serializers.IntegerField()
+    member = serializers.IntegerField()
+    attention = serializers.IntegerField()
+    learn = serializers.IntegerField()
+    comment_num = serializers.IntegerField()
+    tag_id = serializers.IntegerField()
+    section_num = serializers.IntegerField()
+    recommand = serializers.CharField(max_length=50)
+    detail = serializers.CharField(max_length=50)
+
+    def create(self, data):
+        m = Course.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data['title']
+        instance.pic = validated_data['pic']
+        instance.info = validated_data['info']
+        instance.teacher_id = validated_data['teacher_id']
+        instance.path_id = validated_data['path_id']
+        instance.online = validated_data['online']
+        instance.member = validated_data['member']
+        instance.attention = validated_data['attention']
+        instance.learn = validated_data['learn']
+        instance.comment_num = validated_data['comment_num']
+        instance.tag_id = validated_data['tag_id']
+        instance.section_num = validated_data['section_num']
+        instance.recommand = validated_data['recommand']
+        instance.detail = validated_data['detail']
+        instance.save()
+        return instance
+
+
+# 讲师的序列化
+class TeacherSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = Teacher
+        fields = '__all__'
+
+
+# 讲师序列化
+class TeacherSerializers(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
+    desc = serializers.CharField(max_length=255)
+    pic = serializers.CharField(max_length=255)
+
+
+    def create(self, data):
+        m = Teacher.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.path_id = validated_data['path_id']
+        instance.sort = validated_data['sort']
+        instance.save()
+        return instance

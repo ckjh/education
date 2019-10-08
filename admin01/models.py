@@ -112,6 +112,7 @@ class UserPath(models.Model):
 
 
 class PathStage(models.Model):
+    name = models.CharField(max_length=50, default='')
     path = models.ForeignKey(Path, on_delete=models.CASCADE)
     sort = models.IntegerField()
 
@@ -216,7 +217,7 @@ class Tag(Base):
 class Course(Base):
     title = models.CharField(max_length=50, verbose_name='课程标题')
     pic = models.CharField(max_length=255, verbose_name='课程图片')
-    info = models.CharField(max_length=50, verbose_name='课程简介')
+    info = models.CharField(max_length=255, verbose_name='课程简介')
     # 是否上线 0没上线 1上线
     online = models.IntegerField(default=1, verbose_name='是否上线')
     # 是否会员 0非会员 1会员2训练营
@@ -400,7 +401,7 @@ class Coupon(Base):
 class Usercoupon(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     type = models.IntegerField(verbose_name='优惠券类型', default=0)  # 1首次注册会员送  2全场能用  3指定商品  4指定会员
-    code = models.IntegerField(verbose_name='优惠券唯一编码',default='')
+    code = models.IntegerField(verbose_name='优惠券唯一编码', default='')
     start_time = models.DateTimeField(auto_now_add=True, verbose_name='优惠券开始时间')
     end_time = models.DateTimeField(auto_now=True, verbose_name='优惠券结束时间')
     money = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='优惠券金额')
