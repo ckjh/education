@@ -335,23 +335,27 @@ from fdfs_client.client import Fdfs_client
 def get_pic_url(pic):
     # 获取图片路径的逻辑
     file = pic
+
     # print(pic)
     # client = Fdfs_client("client.conf")
     # ret=client.upload_by_buffer(pic)
     # # ret = client.upload_by_filename('1.jpg')
     # print(ret,'========================')
     # return ret
-    if file:
+    if type(file) is not type(''):
         # f = open(os.path.join(settings.UPLOAD_ROOT,'',file.name),'wb')
         f = open(os.path.join(settings.STATICFILES_DIRS[0], file.name), 'wb')
         for chunk in file.chunks():
             f.write(chunk)
         f.close()
 
-    return settings.PIC_URL + file.name
+        return settings.PIC_URL + file.name
+    else:
+        return file
+
+    # 阶段的增删改查
 
 
-# 阶段的增删改查
 class PathstageView(APIView):
     # 展示
     def get(self, request):
@@ -493,7 +497,7 @@ class CourseAPIView(APIView):
 
 class TeacherAPIView(APIView):
     def post(self, request):
-        data = request.data
+        data = request.data.copy()
         data['pic'] = get_pic_url(data['image'])
         ser = TeacherSerializers(data=data)
         mes = {}
@@ -501,7 +505,6 @@ class TeacherAPIView(APIView):
             ser.save()
             mes['code'] = 200
             mes['msg'] = 'ok'
-            mes['data'] = ser.data
 
         else:
             print(ser.errors)
@@ -522,7 +525,7 @@ class TeacherAPIView(APIView):
         return Response(mes)
 
     def put(self, request):
-        data = request.data
+        data = request.data.copy()
         print(data)
         data['pic'] = get_pic_url(data['image'])
         c1 = Teacher.objects.get(id=data['id'])
@@ -532,7 +535,6 @@ class TeacherAPIView(APIView):
             ser.save()
             mes['code'] = 200
             mes['msg'] = 'ok'
-            mes['data'] = ser.data
 
         else:
             print(ser.errors)
@@ -544,5 +546,6 @@ class TeacherAPIView(APIView):
         tea = Teacher.objects.all()
         u = TeacherSerializersModel(tea, many=True)
         mes = {}
-        mes['name'] = u.data
+        mes['code'] = 200
+        mes['dataList'] = u.data
         return Response(mes)

@@ -107,6 +107,7 @@ class PathStageSerializersModel(serializers.ModelSerializer):
 
 # 阶段的反序列化
 class PathStageSerializers(serializers.Serializer):
+    name = serializers.CharField(max_length=50)
     path_id = serializers.IntegerField()
     sort = serializers.IntegerField()
 
@@ -188,13 +189,13 @@ class TeacherSerializers(serializers.Serializer):
     desc = serializers.CharField(max_length=255)
     pic = serializers.CharField(max_length=255)
 
-
     def create(self, data):
         m = Teacher.objects.create(**data)
         return m
 
     def update(self, instance, validated_data):
-        instance.path_id = validated_data['path_id']
-        instance.sort = validated_data['sort']
+        instance.name = validated_data['name']
+        instance.desc = validated_data['desc']
+        instance.pic = validated_data['pic']
         instance.save()
         return instance
