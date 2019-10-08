@@ -226,8 +226,8 @@ class Course(Base):
     learn = models.IntegerField(verbose_name='学过人数')
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE, verbose_name='老师外键')
     comment_num = models.IntegerField(verbose_name='评论数')
-    pathstage = models.ForeignKey(PathStage, on_delete=models.CASCADE, verbose_name='阶段外键',null=True)
-    path = models.ForeignKey(Path, on_delete=models.CASCADE, verbose_name='路径',null=True)
+    pathstage = models.ForeignKey(PathStage, on_delete=models.CASCADE, verbose_name='阶段外键', null=True)
+    path = models.ForeignKey(Path, on_delete=models.CASCADE, verbose_name='路径', null=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, verbose_name='标签外键')
     recommand = models.CharField(max_length=50, verbose_name='推荐课程')
     detail = models.CharField(max_length=50, verbose_name='课程详情')
@@ -241,7 +241,7 @@ class Course(Base):
 class Section(Base):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     section = models.CharField(max_length=50, verbose_name='课程章节名称')
-    video = models.CharField(max_length=50, verbose_name='视频连接')
+    video = models.CharField(max_length=255, verbose_name='视频连接')
     sort = models.IntegerField(verbose_name='排序')
 
     class Meta():

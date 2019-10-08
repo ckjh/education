@@ -1,12 +1,11 @@
 ﻿import os
 
-from django.shortcuts import render
-from rest_framework.views import APIView
+from django.core.paginator import Paginator
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 # Create your views here.
 from admin01.serializer import *
-from django.core.paginator import Paginator
-
 # 用户等级管理
 from education import settings
 
@@ -329,9 +328,6 @@ class PathAPIView(APIView):
         return Response(ret)
 
 
-from fdfs_client.client import Fdfs_client
-
-
 def get_pic_url(pic):
     # 获取图片路径的逻辑
     file = pic
@@ -348,7 +344,6 @@ def get_pic_url(pic):
         for chunk in file.chunks():
             f.write(chunk)
         f.close()
-
         return settings.PIC_URL + file.name
     else:
         return file
@@ -362,7 +357,7 @@ class PathstageView(APIView):
         ret = {}
         try:
             id = request.GET.get('id')
-            if str(id).isdigit():
+            if id:
                 tags = PathStage.objects.filter(path_id=int(id)).all()
             else:
                 tags = PathStage.objects.all()
@@ -438,6 +433,7 @@ class CourseAPIView(APIView):
         ret = {}
         try:
             data = request.data.copy()
+            print(data)
             # 图片上传逻辑
             data['pic'] = get_pic_url(data['pic'])
             ser = CourseSerializers(data=data)
@@ -499,6 +495,7 @@ class CourseAPIView(APIView):
         return Response(ret)
 
 
+# 讲师管理
 class TeacherAPIView(APIView):
     def post(self, request):
         data = request.data.copy()
@@ -553,4 +550,136 @@ class TeacherAPIView(APIView):
         mes = {}
         mes['code'] = 200
         mes['dataList'] = u.data
+        return Response(mes)
+
+
+# 章节列表
+class SectionView(APIView):
+    def get(self, request):
+        mes = {}
+        try:
+            section = Section.objects.all()
+            s = SectionSerializersModel(section, many=True)
+            mes['code'] = 200
+            mes['message'] = 'ok'
+            mes['dataList'] = s.data
+        except:
+            mes['code'] = 10010
+            mes['message'] = '数据库请求失败'
+        return Response(mes)
+
+    def post(self, request):
+        mes = {}
+        data = request.data
+        data['video'] = get_pic_url(data['video'])
+        if data:
+            s = SectionSerializers(data=data)
+            if s.is_valid():
+                s.save()
+                mes['code'] = 200
+                mes['message'] = 'ok'
+            else:
+                print(s.errors)
+                mes['code'] = 10020
+                mes['message'] = '添加失败'
+        else:
+            mes['code'] = 10030
+            mes['message'] = '获取数据不全'
+        return Response(mes)
+
+    def put(self, request):
+        data = request.data.copy()
+        data['video'] = get_pic_url(data['video'])
+        print(data)
+        c1 = Section.objects.get(id=data['id'])
+        ser = SectionSerializers(c1, data=data)
+        mes = {}
+        if ser.is_valid():
+            ser.save()
+            mes['code'] = 200
+            mes['msg'] = 'ok'
+        else:
+            print(ser.errors)
+            mes['code'] = 400
+            mes['msg'] = '失败'
+        return Response(mes)
+
+    def delete(self, request):
+        id = request.data['id']
+        mes = {}
+        if id:
+            Section.objects.get(id=id).delete()
+            mes['code'] = 200
+            mes['msg'] = "删除成功"
+        else:
+            mes['code'] = 400
+            mes['msg'] = "删除失败"
+        return Response(mes)
+
+
+
+
+
+# 价格
+class SetPriceAPIView(APIView):
+    def get(self, request):  # 展示价格
+        ret = {}
+        course_id = request.GET.get('course_id')
+        priceList = Price.objects.filter(course_id=course_id)
+        priceList = PriceSerializersModel(priceList, many=True)
+        ret['dataList'] = priceList.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+    # 添加价格
+    def post(self, request):
+        ret = {}
+        data = request.data
+        print(data['levels'])
+        for level in data['levels']:
+            # 一次性将所有会员对应的价格添加
+            ser = PriceSerializers(data={'type': level['id'],  # 会员id
+                                         'course_id': data['course_id'],  # 课程id
+                                         'discount': level['discount'],  # 打几折
+                                         'discoun_price': float(data['price']) * float(level['discount'], ) * 0.1
+                                         # 折后价格
+                                         })
+            if ser.is_valid():
+                ser.save()
+        print(data)
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+    def put(self, request):
+        # 修改偷懒了,将旧价格删掉,重新填新价格
+        ret = {}
+        data = request.data
+        print(data)
+        p = Price.objects.filter(course_id=data['course_id']).all()
+        # 将旧的价格删掉
+        p.delete()
+        for level in data['levels']:
+            ser = PriceSerializers(data={'type': level['id'],
+                                         'course_id': data['course_id'],
+                                         'discount': level['discount'],
+                                         'discoun_price': float(data['price']) * float(level['discount'], ) * 0.1
+                                         })
+            if ser.is_valid():
+                ser.save()
+        print(data)
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+
+# 获取视频地址
+class Video(APIView):
+    def post(self, request):
+        data = request.data
+        video = get_pic_url(data['file'])
+        print(data)
+        mes = {}
+        mes['url'] = video
         return Response(mes)

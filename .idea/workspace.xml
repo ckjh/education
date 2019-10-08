@@ -2,11 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/admin01/migrations/0005_auto_20191008_1206.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/admin01/migrations/0006_auto_20191008_1208.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/admin01/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/serializer.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin01/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/admin01/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -182,7 +181,7 @@
       <workItem from="1570368894481" duration="92000" />
       <workItem from="1570371010722" duration="2185000" />
       <workItem from="1570456808635" duration="5304000" />
-      <workItem from="1570489573486" duration="17313000" />
+      <workItem from="1570489573486" duration="37457000" />
     </task>
     <servers />
   </component>
@@ -209,10 +208,6 @@
           <url>file://$PROJECT_DIR$/manage.py</url>
           <line>8</line>
           <option name="timeStamp" value="1" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/admin01/views.py</url>
-          <option name="timeStamp" value="2" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -4,6 +4,8 @@ from admin01.models import *
 
 # 用户等级序列化类
 class UserLevelSerializer(serializers.ModelSerializer):
+    discount = serializers.DecimalField(max_digits=7, decimal_places=2, default=10)
+
     class Meta:
         model = UserLevel
         fields = "__all__"
@@ -125,6 +127,7 @@ class PathStageSerializers(serializers.Serializer):
 # 课程序列化
 class CourseSerializersModel(serializers.ModelSerializer):
     teacher = serializers.CharField(source='teacher.name')
+    pathstage = serializers.CharField(source='pathstage.name')
     path = serializers.CharField(source='pathstage.name')
     tag = serializers.CharField(source='tag.name')
     teacher_id = serializers.IntegerField()
@@ -201,3 +204,64 @@ class TeacherSerializers(serializers.Serializer):
         instance.pic = validated_data['pic']
         instance.save()
         return instance
+
+
+# 章节序列化
+class SectionSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = '__all__'
+
+
+# 章节序列化
+class SectionSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = Section
+        fields = '__all__'
+
+
+# 章节反序列化
+class SectionSerializers(serializers.Serializer):
+    course_id = serializers.IntegerField()
+    section = serializers.CharField()
+    video = serializers.CharField()
+    sort = serializers.IntegerField()
+
+    def create(self, data):
+        m = Section.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.course_id = validated_data['course_id']
+        instance.section = validated_data['section']
+        instance.video = validated_data['video']
+        instance.sort = validated_data['sort']
+        instance.save()
+        return instance
+
+# 价格的序列化类
+class PriceSerializersModel(serializers.ModelSerializer):
+    level = serializers.SerializerMethodField()
+
+    def get_level(self, row):
+        if row.type > 0:
+            c = UserLevel.objects.get(id=row.type)
+            name = c.level
+        else:
+            name = ''
+        return name
+
+    class Meta:
+        model = Price
+        fields = '__all__'
+
+
+class PriceSerializers(serializers.Serializer):
+    type = serializers.IntegerField()
+    course_id = serializers.IntegerField()
+    discount = serializers.FloatField()
+    discoun_price = serializers.DecimalField(max_digits=7, decimal_places=2)
+
+    def create(self, data):
+        m = Price.objects.create(**data)
+        return m
