@@ -143,6 +143,7 @@ class CourseSerializers(serializers.Serializer):
     info = serializers.CharField(max_length=255)
     teacher_id = serializers.IntegerField()
     path_id = serializers.IntegerField()
+    pathstage_id = serializers.IntegerField()
     online = serializers.IntegerField()
     member = serializers.IntegerField()
     attention = serializers.IntegerField()
@@ -162,6 +163,7 @@ class CourseSerializers(serializers.Serializer):
         instance.pic = validated_data['pic']
         instance.info = validated_data['info']
         instance.teacher_id = validated_data['teacher_id']
+        instance.pathstage_id = validated_data['pathstage_id']
         instance.path_id = validated_data['path_id']
         instance.online = validated_data['online']
         instance.member = validated_data['member']
