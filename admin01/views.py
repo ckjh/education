@@ -361,7 +361,11 @@ class PathstageView(APIView):
     def get(self, request):
         ret = {}
         try:
-            tags = PathStage.objects.all()
+            id = request.GET.get('id')
+            if str(id).isdigit():
+                tags = PathStage.objects.filter(path_id=int(id)).all()
+            else:
+                tags = PathStage.objects.all()
             tags = PathStageSerializersModel(tags, many=True)
             ret['tags'] = tags.data
             ret['code'] = 200
