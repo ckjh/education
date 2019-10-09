@@ -1,4 +1,5 @@
 ﻿import os
+import paramiko
 from uuid import uuid1
 from django.core.paginator import Paginator
 from rest_framework.response import Response
@@ -355,10 +356,9 @@ def get_pic_url(pic):
     else:
         return file
 
-    # 阶段的增删改查
 
-
-class PathstageView(APIView):
+# 阶段的增删改查
+class PathStageView(APIView):
     # 展示
     def get(self, request):
         ret = {}
@@ -678,14 +678,13 @@ class SetPriceAPIView(APIView):
         data = request.data
         print(data)
         p = Price.objects.filter(course_id=data['course_id']).all()
-        # 将旧的价格删掉
-        p.delete()
         for level in data['levels']:
-            ser = PriceSerializers(data={'type': level['id'],
-                                         'course_id': data['course_id'],
-                                         'discount': level['discount'],
-                                         'discoun_price': float(data['price']) * float(level['discount'], ) * 0.1
-                                         })
+            p = Price.objects.filter(course_id=data['course_id'], type=level['id']).first()
+            ser = PriceSerializers(p, data={'type': level['id'],
+                                            'course_id': data['course_id'],
+                                            'discount': level['discount'],
+                                            'discoun_price': float(data['price']) * float(level['discount'], ) * 0.1
+                                            })
             if ser.is_valid():
                 ser.save()
         print(data)
@@ -702,4 +701,90 @@ class Video(APIView):
         print(data)
         mes = {}
         mes['url'] = video
+        return Response(mes)
+
+
+# 备份数据库
+class BackupsAPIView(APIView):
+    def get(self, request):
+        ret = {}
+
+        # 实例化SSHClient
+        client = paramiko.SSHClient()
+        # 自动添加策略，保存服务器的主机名和密钥信息
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        # 连接SSH服务端，以用户名和密码进行认证
+        client.connect(settings.IP, username=settings.USER, password=settings.PASSWORD)
+        # 打开一个Channel并执行命令
+        command = 'sh /home/backupdb.sh'
+        stdin, stdout, stderr = client.exec_command(command)
+        # 打印执行结果
+        print(stdout.readlines())
+        # 关闭SSHClient
+        client.close()
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+
+# 优惠券的增删改查
+class CouponView(APIView):
+    def get(self, request):
+        coupon = Coupon.objects.all()
+        ser = CouponModelSerializer(instance=coupon, many=True)
+        mes = {}
+        if ser:
+            mes['code'] = 200
+            mes['message'] = '查询成功'
+            mes['dataList'] = ser.data
+        else:
+            mes['code'] = 607
+            mes['message'] = '查询失败'
+        return Response(mes)
+
+    def post(self, request):
+        mes = {}
+        data = request.data
+        # data['video'] = get_pic_url(data['video'])
+        if data:
+            s = CouponSerializer(data=data)
+            if s.is_valid():
+                s.save()
+                mes['code'] = 200
+                mes['message'] = 'ok'
+            else:
+                print(s.errors)
+                mes['code'] = 10020
+                mes['message'] = '添加失败'
+        else:
+            mes['code'] = 10030
+            mes['message'] = '获取数据不全'
+        return Response(mes)
+
+    def put(self, request):
+        data = request.data.copy()
+        # data['video'] = get_pic_url(data['video'])
+        c1 = Coupon.objects.get(id=data['id'])
+        ser = CouponSerializer(c1, data=data)
+        mes = {}
+        if ser.is_valid():
+            ser.save()
+            mes['code'] = 200
+            mes['msg'] = 'ok'
+        else:
+            print(ser.errors)
+            mes['code'] = 400
+            mes['msg'] = '失败'
+        return Response(mes)
+
+    def delete(self, request):
+        id = request.data['id']
+        mes = {}
+        if id:
+            Coupon.objects.get(id=id).delete()
+            mes['code'] = 200
+            mes['msg'] = "删除成功"
+        else:
+            mes['code'] = 400
+            mes['msg'] = "删除失败"
         return Response(mes)

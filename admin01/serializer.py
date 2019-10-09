@@ -239,6 +239,7 @@ class SectionSerializers(serializers.Serializer):
         instance.save()
         return instance
 
+
 # 价格的序列化类
 class PriceSerializersModel(serializers.ModelSerializer):
     level = serializers.SerializerMethodField()
@@ -255,6 +256,7 @@ class PriceSerializersModel(serializers.ModelSerializer):
         model = Price
         fields = '__all__'
 
+
 class PriceSerializers(serializers.Serializer):
     type = serializers.IntegerField()
     course_id = serializers.IntegerField()
@@ -264,3 +266,56 @@ class PriceSerializers(serializers.Serializer):
     def create(self, data):
         m = Price.objects.create(**data)
         return m
+
+    def update(self, instance, validated_data):
+        instance.discount = validated_data['discount']
+        instance.discoun_price = validated_data['discoun_price']
+        instance.save()
+        return instance
+
+
+# 优惠券序列化
+class CouponModelSerializer(serializers.ModelSerializer):
+    # course = serializers.SlugRelatedField(slug_field='name',read_only=True)
+    course = serializers.SerializerMethodField()
+
+    def get_level(self, row):
+        if row.course > 0:
+            c = Course.objects.get(id=row.course)
+            name = c.title
+        else:
+            name = ''
+        return name
+
+    class Meta:
+        models = Coupon
+        fields = '__all__'
+
+
+class CouponSerializer(serializers.Serializer):
+    name = serializers.CharField()  # 优惠券名称
+    count = serializers.IntegerField()  # 优惠券数量
+    type = serializers.IntegerField()  # 1首次注册会员送  2全场能用  3指定商品  4指定会员  #优惠券类型
+    course = serializers.IntegerField()  # 类型为3时指定课程
+    start_time = serializers.DateTimeField()  # 会员开始时间
+    end_time = serializers.DateTimeField()  # 会员结束时间
+    status = serializers.IntegerField()  # 1可用，2过期  #使用状态
+    condition = serializers.DecimalField(max_digits=7, decimal_places=2)  # 满多少钱可以使用
+    money = serializers.DecimalField(max_digits=7, decimal_places=2)  # 优惠券金额
+
+    def create(self, data):
+        m = Coupon.objects.create(**data)
+        return m
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data['name']
+        instance.count = validated_data['count']
+        instance.type = validated_data['type']
+        instance.course = validated_data['course']
+        instance.start_time = validated_data['start_time']
+        instance.end_time = validated_data['end_time']
+        instance.status = validated_data['status']
+        instance.condition = validated_data['condition']
+        instance.money = validated_data['money']
+        instance.save()
+        return instance
