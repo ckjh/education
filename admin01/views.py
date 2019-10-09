@@ -1,15 +1,49 @@
-﻿
-import os
+﻿import os
 import paramiko
 from uuid import uuid1
 from django.core.paginator import Paginator
+from fdfs_client.client import Fdfs_client
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from fdfs_client.client import Fdfs_client
 
 # Create your views here.
 from admin01.serializer import *
 # 用户等级管理
 from education import settings
+
+
+def delete_file(url):
+    name = url.split('M00')
+    command = 'rm -rf /var/fdfs/storage/data/' + name[-1]
+    # 实例化SSHClient
+    client = paramiko.SSHClient()
+    # 自动添加策略，保存服务器的主机名和密钥信息
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    # 连接SSH服务端，以用户名和密码进行认证
+    client.connect(settings.IP, username=settings.USER, password=settings.PASSWORD)
+    # 打开一个Channel并执行命令
+    stdin, stdout, stderr = client.exec_command(command)
+    # 打印执行结果
+    print(stdout.readlines())
+    # 关闭SSHClient
+    client.close()
+
+
+def get_pic_url(pic):
+    # 获取图片路径的逻辑
+    file = pic
+
+    # print(pic)
+    client = Fdfs_client("C:/fdfs.conf")
+    # return ret
+    if type(file) is not type(''):
+        buffimg = b''  # 创建空的二进制流
+        for chunk in file.chunks():
+            buffimg += chunk  # 将图片传进流中
+        return settings.PIC_URL + client.upload_by_buffer(buffimg, file_ext_name='jpg')['Remote file_id']
+    else:
+        return file
 
 
 class LevelAPIView(APIView):
@@ -293,7 +327,7 @@ class PathAPIView(APIView):
             data = request.data
             t = Path.objects.get(id=id)
             try:
-                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+                delete_file(t.pic)
             except:
                 pass
             t.delete()
@@ -334,28 +368,6 @@ class PathAPIView(APIView):
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
-
-
-def get_pic_url(pic):
-    # 获取图片路径的逻辑
-    file = pic
-
-    # print(pic)
-    # client = Fdfs_client("client.conf")
-    # ret=client.upload_by_buffer(pic)
-    # # ret = client.upload_by_filename('1.jpg')
-    # print(ret,'========================')
-    # return ret
-    if type(file) is not type(''):
-        name = str(uuid1()) + file.name
-        # f = open(os.path.join(settings.UPLOAD_ROOT,'',file.name),'wb')
-        f = open(os.path.join(settings.STATICFILES_DIRS[0], name), 'wb')
-        for chunk in file.chunks():
-            f.write(chunk)
-        f.close()
-        return settings.PIC_URL + name
-    else:
-        return file
 
 
 # 阶段的增删改查
@@ -465,7 +477,7 @@ class CourseAPIView(APIView):
             data = request.data
             t = Course.objects.get(id=id)
             try:
-                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+                delete_file(t.pic)
             except:
                 pass
             t.delete()
@@ -514,6 +526,7 @@ class TeacherAPIView(APIView):
         data = request.data.copy()
         print(data)
         data['pic'] = get_pic_url(data['pic'])
+        print(data)
         ser = TeacherSerializers(data=data)
         mes = {}
         if ser.is_valid():
@@ -534,7 +547,8 @@ class TeacherAPIView(APIView):
         if id:
             t = Teacher.objects.get(id=id)
             try:
-                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+                delete_file(t.pic)
+                delete_file(t.pic)
             except:
                 pass
             t.delete()
@@ -629,7 +643,7 @@ class SectionView(APIView):
         if id:
             t = Section.objects.get(id=id)
             try:
-                os.remove(os.path.join(settings.STATICFILES_DIRS[0], t.pic.split("/")[-1]))
+                delete_file(t.pic)
             except:
                 pass
             t.delete()
@@ -703,6 +717,10 @@ class Video(APIView):
         mes = {}
         mes['url'] = video
         return Response(mes)
+
+
+# http://116.62.155.103:8888/group1\M00/00/00/rBAdwl2eAzeAOA4TAAEsxfGKC08842.jpg
+# http://116.62.155.103:8888/group1\M00/00/00/rBAdwl2eAmCAVME3AARjErJ7pcc779.jpg
 
 
 # 备份数据库
@@ -785,6 +803,3 @@ class CouponView(APIView):
             mes['code'] = 400
             mes['msg'] = "删除失败"
         return Response(mes)
-
-
-

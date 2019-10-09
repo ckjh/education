@@ -158,8 +158,8 @@ JWT_AUTH = {
 AUTH_USER_MODEL = 'admin01.User'  # 指定用户表
 DATABASE_ROUTERS = ['utils.db_router.MasterSlaveRouter']
 
-PIC_URL = 'http://127.0.0.1:8000/static/'
-DEFAULT_FILE_STORAGE = 'admin01.storage.FastDFSStorage'
+PIC_URL = 'http://116.62.155.103:8888/'
+# DEFAULT_FILE_STORAGE = 'admin01.storage.FastDFSStorage'
 
 IP = '116.62.155.103'
 USER = 'root'  # 用户名
