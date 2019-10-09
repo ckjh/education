@@ -19,5 +19,6 @@ from reception import views
 
 app_name = 'reception'
 urlpatterns = [
-    path('s/', views.SendMailAPIView.as_view()),  # 课程标签管理
+    path('login/', views.LoginAPIView.as_view()),  # 课程标签管理
+    path('reg/', views.RegAPIView.as_view()),  # 课程标签管理
 ]

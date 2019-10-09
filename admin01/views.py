@@ -1,7 +1,4 @@
 ﻿
-from rest_framework_jwt.settings import api_settings        # jwt中的配置项 api_settings
-from django.contrib.auth.hashers import check_password
-from admin01.utils import getMd5, getUUID
 import os
 import paramiko
 from uuid import uuid1
@@ -789,34 +786,6 @@ class CouponView(APIView):
             mes['code'] = 400
             mes['msg'] = "删除失败"
         return Response(mes)
-
-
-class Login(APIView):                              # todo 登录
-    def post(self, request):                          # 登录的时候需要 验证码 账号与密码  验证通过 返回令牌 用户的个人信息
-        username = request.data.get("username")
-        password = request.data.get("password")
-        user = User.objects.filter(username=username).first()
-        res = {}
-        if user and user.check_password(password):                  # 查找用户 比对密码
-            if user.is_valide == 1:                                 # 如果未激活
-                res["code"] = 301
-                res["msg"] = "用户未在激活状态"
-            else:                                                   # 激活了   提供令牌 作为 登录成功的标识
-                jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-                jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-                payload = jwt_payload_handler(user)                 # 用户对象 处理器
-                # 通过jwt编码 生成token令牌
-                token = jwt_encode_handler(payload)
-
-                res["code"] = 200
-                res["token"] = token    #自定义登录生成token
-                res["uid"] = user.id
-                res["username"] = username
-                res['meg'] = '登录成功'
-        else:                                                      # 没有 找到用户 或密码错误
-            res["code"] = 401
-            res["msg"] = "用户名或密码错误"
-        return Response(res)
 
 
 
