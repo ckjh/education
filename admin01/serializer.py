@@ -213,13 +213,6 @@ class SectionSerializersModel(serializers.ModelSerializer):
         fields = '__all__'
 
 
-# 章节序列化
-class SectionSerializersModel(serializers.ModelSerializer):
-    class Meta:
-        model = Section
-        fields = '__all__'
-
-
 # 章节反序列化
 class SectionSerializers(serializers.Serializer):
     course_id = serializers.IntegerField()
@@ -277,18 +270,22 @@ class PriceSerializers(serializers.Serializer):
 # 优惠券序列化
 class CouponModelSerializer(serializers.ModelSerializer):
     # course = serializers.SlugRelatedField(slug_field='name',read_only=True)
-    course = serializers.SerializerMethodField()
+    course_name = serializers.SerializerMethodField()
 
-    def get_level(self, row):
+    def get_course_name(self, row):
         if row.course > 0:
-            c = Course.objects.get(id=row.course)
-            name = c.title
+            name = ''
+            try:
+                c = Course.objects.get(id=row.course)
+                name = c.title
+            except:
+                name: ''
         else:
             name = ''
         return name
 
     class Meta:
-        models = Coupon
+        model = Coupon
         fields = '__all__'
 
 
@@ -296,7 +293,7 @@ class CouponSerializer(serializers.Serializer):
     name = serializers.CharField()  # 优惠券名称
     count = serializers.IntegerField()  # 优惠券数量
     type = serializers.IntegerField()  # 1首次注册会员送  2全场能用  3指定商品  4指定会员  #优惠券类型
-    course = serializers.IntegerField()  # 类型为3时指定课程
+    course = serializers.IntegerField(default=0)  # 类型为3时指定课程
     start_time = serializers.DateTimeField()  # 会员开始时间
     end_time = serializers.DateTimeField()  # 会员结束时间
     status = serializers.IntegerField()  # 1可用，2过期  #使用状态

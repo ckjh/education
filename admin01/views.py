@@ -733,18 +733,16 @@ class CouponView(APIView):
         coupon = Coupon.objects.all()
         ser = CouponModelSerializer(instance=coupon, many=True)
         mes = {}
-        if ser:
-            mes['code'] = 200
-            mes['message'] = '查询成功'
-            mes['dataList'] = ser.data
-        else:
-            mes['code'] = 607
-            mes['message'] = '查询失败'
+        mes['code'] = 200
+        mes['message'] = '查询成功'
+        mes['dataList'] = ser.data
         return Response(mes)
 
     def post(self, request):
         mes = {}
         data = request.data
+        print(type(data['start_time']))
+        print(data)
         # data['video'] = get_pic_url(data['video'])
         if data:
             s = CouponSerializer(data=data)
@@ -763,7 +761,6 @@ class CouponView(APIView):
 
     def put(self, request):
         data = request.data.copy()
-        # data['video'] = get_pic_url(data['video'])
         c1 = Coupon.objects.get(id=data['id'])
         ser = CouponSerializer(c1, data=data)
         mes = {}
