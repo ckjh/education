@@ -165,10 +165,9 @@ IP = '116.62.155.103'
 USER = 'root'  # 用户名
 PASSWORD = 'YTYyty2211'  # 密码
 
-
 import djcelery
-djcelery.setup_loader()
-BROKER_URL='amqp://hnq:123456@116.62.155.103:5672/myvhost'
-CELERY_IMPORTS = ('reception.task') # 任务路径
-CELERY_RESULT_BACKEND='amqp://hnq:123456@116.62.155.103:5672/myvhost'
 
+djcelery.setup_loader()
+BROKER_URL = 'amqp://username01:password01@116.62.155.103:5672/myvhost'
+CELERY_IMPORTS = ('reception.task')  # 任务路径
+CELERY_RESULT_BACKEND = 'amqp://hnq:123456@116.62.155.103:5672/myvhost'
