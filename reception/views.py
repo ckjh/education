@@ -1,42 +1,61 @@
-from django.shortcuts import render
+from django.shortcuts import render,HttpResponse
 from rest_framework_jwt.settings import api_settings  # jwt中的配置项 api_settings
 from django.contrib.auth.hashers import check_password, make_password
-import json
-import redis
-import paramiko
-import re
-from uuid import uuid1
 from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from utils.redis_pool import POOL
 from reception.task import send
-import uuid
+from utils.captcha.captcha import captcha
 from admin01.models import *
+import uuid
+import json
+import redis
+import paramiko
+import re
 
 
+
+# 验证码 获取文本
+def GetImageCode(request):
+    name,text,image = captcha.generate_captcha()
+    #存入session 用户提交的时候进行对比
+    request.session['image_code'] = text
+    print(name)
+    print(text)
+    print(image)
+    return HttpResponse(image,'image/png')
+
+
+#注册接口
 class RegAPIView(APIView):
     def post(self, request):
         ret = {}
         data = request.data
+        image_code = data['image_code']
         cartDict = {}
         if re.match("^[a-z0-9A-Z]+[-|a-z0-9A-Z._]+@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-z]{2,}$",
                     data['email']):  # 判断邮箱正确性
             if 18 >= len(data['password']) >= 6:  # 判断密码
-                # 建立reids连接
-                conn = redis.Redis(connection_pool=POOL)
-                # 生成 token
-                token = str(uuid.uuid1()).replace('-', '')
-                print(token)
-                cartDict['email'] = data['email']
-                cartDict['password'] = data['password']
-                #  存入 reids ==> user:表名  token: 键  cartDict: 值
-                conn.hset('user' + token, token, json.dumps(cartDict))
-                conn.expire('user' + token, 2592000)  # 设置过期时间一个月
-                # 发送邮箱 激活账户
-                send.delay(token=token, email=data['email'])
-                ret['code'] = 200
-                ret['message'] = '成功'
+                # 获取session验证文本
+                image_code1 = request.session.get('image_code').lower()
+                if image_code == image_code1:
+                    # 建立reids连接
+                    conn = redis.Redis(connection_pool=POOL)
+                    # 生成 token
+                    token = str(uuid.uuid1()).replace('-', '')
+                    cartDict['email'] = data['email']
+                    cartDict['password'] = data['password']
+                    #  存入 reids ==> user:表名  token: 键  cartDict: 值
+                    conn.hset('user' + token, token, json.dumps(cartDict))
+                    conn.expire('user' + token, 2592000)  # 设置过期时间一个月
+                    # 发送邮箱 激活账户
+                    send.delay(token=token, email=data['email'])
+                    ret['code'] = 200
+                    ret['message'] = '成功'
+                else:
+                    ret[ 'code' ] = 10040
+                    ret[ 'message' ] = '验证码输入错误'
             else:
                 ret['code'] = 10010
                 ret['message'] = '密码长度小于6位大于18位'

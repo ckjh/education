@@ -21,4 +21,5 @@ app_name = 'reception'
 urlpatterns = [
     path('login/', views.LoginAPIView.as_view()),  # 课程标签管理
     path('reg/', views.RegAPIView.as_view()),  # 课程标签管理
+    path('getimagecode/', views.GetImageCode),  # 课程标签管理
 ]
