@@ -5,7 +5,7 @@ from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from utils.redis_pool import POOL
-from reception.task import send
+from reception.task import *
 from utils.captcha.captcha import captcha
 from admin01.models import *
 import uuid
@@ -21,9 +21,6 @@ def GetImageCode(request):
     name,text,image = captcha.generate_captcha()
     #存入session 用户提交的时候进行对比
     request.session['image_code'] = text
-    print(name)
-    print(text)
-    print(image)
     return HttpResponse(image,'image/png')
 
 
@@ -83,12 +80,13 @@ class RegAPIView(APIView):
 
 class LoginAPIView(APIView):  # todo 登录
     def post(self, request):  # 登录的时候需要 验证码 账号与密码  验证通过 返回令牌 用户的个人信息
-        username = request.data.get("username")
-        password = request.data.get("password")
+        username = request.data['username']
+        password = request.data['password']
+        print(password)
         user = User.objects.filter(username=username).first()
         res = {}
-        if user and user.check_password(password):  # 查找用户 比对密码
-            if user.is_valide == 1:  # 如果未激活
+        if check_password(password,user.password):  # 查找用户 比对密码
+            if user.integral == 1:  # 如果未激活
                 res["code"] = 301
                 res["msg"] = "用户未在激活状态"
             else:  # 激活了   提供令牌 作为 登录成功的标识
@@ -107,3 +105,28 @@ class LoginAPIView(APIView):  # todo 登录
             res["code"] = 401
             res["msg"] = "用户名或密码错误"
         return Response(res)
+
+#忘记密码
+class ForGetPwd(APIView):
+    def post( self, request):
+        mes ={}
+        email = request.data['email']
+        image_code = request.data[ 'image_code' ]
+        if re.match ( "^[a-z0-9A-Z]+[-|a-z0-9A-Z._]+@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-z]{2,}$",email ):  # 判断邮箱正确性
+            if image_code == request.session.get('image_code').lower():
+                try:
+                    uid = User.objects.filter(email=email).first()
+                    send1.delay ( uid=uid, email=email )
+                    mes['code'] = 200
+                    mes['message'] = '发送邮件成功'
+                except:
+                    mes[ 'code' ] = 10030
+                    mes[ 'message' ] = '未注册无效用户'
+            else:
+                mes['code'] = 10010
+                mes['message'] = '验证码错误'
+        else:
+            mes[ 'code' ] = 10020
+            mes[ 'message' ] = '邮箱格式错误'
+
+        return Response(mes)

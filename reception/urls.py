@@ -19,7 +19,8 @@ from reception import views
 
 app_name = 'reception'
 urlpatterns = [
-    path('login/', views.LoginAPIView.as_view()),  # 课程标签管理
-    path('reg/', views.RegAPIView.as_view()),  # 课程标签管理
-    path('getimagecode/', views.GetImageCode),  # 课程标签管理
+    path('login/', views.LoginAPIView.as_view()),  # 登录
+    path('reg/', views.RegAPIView.as_view()),  # 注册
+    path('getimagecode/', views.GetImageCode),  # 获取验证码图片
+    path('forgetpwd/', views.ForGetPwd.as_view()),  # 忘记密码接口
 ]
