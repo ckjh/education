@@ -365,6 +365,9 @@ class PathAPIView(APIView):
         dataList = Path.objects.all()
         dataList = PathSerializersModel(dataList, many=True)
         ret['dataList'] = dataList.data
+        limit = request.GET.get('limit')
+        if limit:
+            ret['dataList'] = dataList.data[:int(limit)]
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
@@ -514,6 +517,9 @@ class CourseAPIView(APIView):
         ret = {}
         dataList = Course.objects.all()
         dataList = CourseSerializersModel(dataList, many=True)
+        limit = request.GET.get('limit')
+        if limit:
+            ret['dataList'] = dataList.data[:int(limit)]
         ret['dataList'] = dataList.data
         ret['code'] = 200
         ret['message'] = '成功'

@@ -230,7 +230,7 @@ class Course(Base):
     path = models.ForeignKey(Path, on_delete=models.CASCADE, verbose_name='路径', null=True)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE, verbose_name='标签外键')
     recommand = models.CharField(max_length=50, verbose_name='推荐课程')
-    detail = models.CharField(max_length=50, verbose_name='课程详情')
+    detail = models.CharField(max_length=255, verbose_name='课程详情')
     section_num = models.IntegerField(verbose_name='章节数')
 
     class Meta():

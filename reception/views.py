@@ -228,10 +228,3 @@ class ThirdPartAPIView(APIView):
                     ret['message'] = '绑定失败'
         print(ret)
         return Response(ret)
-
-    def get(self, request):
-        ret = {}
-        code = request.GET.get('code')
-        ret['code'] = 200
-        ret['message'] = '成功'
-        return redirect('http://127.0.0.1:8080/#/weibo_callback/?code=' + code)
