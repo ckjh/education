@@ -4,7 +4,6 @@
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/education/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/education/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reception/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -61,12 +60,6 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-  </component>
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="895" />
-    <option name="y" value="125" />
-    <option name="width" value="1000" />
-    <option name="height" value="780" />
   </component>
   <component name="ProjectId" id="1RMtvlch6wgVoZkDoQI9vBURU1u" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
@@ -180,9 +173,9 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.tests (1)" />
-      <item itemvalue="Python.tests" />
       <item itemvalue="Django server.education" />
+      <item itemvalue="Python.tests" />
+      <item itemvalue="Python.tests (1)" />
     </list>
     <recent_temporary>
       <list>

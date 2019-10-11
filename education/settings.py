@@ -172,6 +172,6 @@ BROKER_URL = 'amqp://username01:password01@116.62.155.103:5672/myvhost'
 CELERY_IMPORTS = ('reception.task')  # 任务路径
 CELERY_RESULT_BACKEND = 'amqp://hnq:123456@116.62.155.103:5672/myvhost'
 
-APP_KEY = '2764841122'
-APP_SECRET = '1b14f5ad924d559240ea47a5197efd68'
-CALLBACK_URL = 'http://127.0.0.1:8080/weibo_callback'
+APP_KEY = '3345882312'
+APP_SECRET = 'f73a866a48b58b0f275111109c265748'
+CALLBACK_URL = 'http://127.0.0.1:8000/thirdLog/'

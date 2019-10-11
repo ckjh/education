@@ -16,16 +16,15 @@ import paramiko
 import re
 
 
-
 # 验证码 获取文本
 def GetImageCode(request):
-    name,text,image = captcha.generate_captcha()
-    #存入session 用户提交的时候进行对比
+    name, text, image = captcha.generate_captcha()
+    # 存入session 用户提交的时候进行对比
     request.session['image_code'] = text
-    return HttpResponse(image,'image/png')
+    return HttpResponse(image, 'image/png')
 
 
-#注册接口
+# 注册接口
 class RegAPIView(APIView):
     def post(self, request):
         ret = {}
@@ -52,8 +51,8 @@ class RegAPIView(APIView):
                     ret['code'] = 200
                     ret['message'] = '成功'
                 else:
-                    ret[ 'code' ] = 10040
-                    ret[ 'message' ] = '验证码输入错误'
+                    ret['code'] = 10040
+                    ret['message'] = '验证码输入错误'
             else:
                 ret['code'] = 10010
                 ret['message'] = '密码长度小于6位大于18位'
@@ -86,7 +85,7 @@ class LoginAPIView(APIView):  # todo 登录
         print(password)
         user = User.objects.filter(username=username).first()
         res = {}
-        if check_password(password,user.password):  # 查找用户 比对密码
+        if check_password(password, user.password):  # 查找用户 比对密码
             if user.integral == 1:  # 如果未激活
                 res["code"] = 301
                 res["msg"] = "用户未在激活状态"
@@ -106,6 +105,7 @@ class LoginAPIView(APIView):  # todo 登录
             res["code"] = 401
             res["msg"] = "用户名或密码错误"
         return Response(res)
+
     def get(self, request):
         # 重定向到微博登陆
         # 回调网址
@@ -116,28 +116,28 @@ class LoginAPIView(APIView):  # todo 登录
         return redirect(url)
 
 
-#忘记密码
+# 忘记密码
 class ForGetPwd(APIView):
-    def post( self, request):
-        mes ={}
+    def post(self, request):
+        mes = {}
         email = request.data['email']
-        image_code = request.data[ 'image_code' ]
-        if re.match ( "^[a-z0-9A-Z]+[-|a-z0-9A-Z._]+@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-z]{2,}$",email ):  # 判断邮箱正确性
+        image_code = request.data['image_code']
+        if re.match("^[a-z0-9A-Z]+[-|a-z0-9A-Z._]+@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-z]{2,}$", email):  # 判断邮箱正确性
             if image_code == request.session.get('image_code').lower():
                 try:
                     uid = User.objects.filter(email=email).first()
-                    send1.delay ( uid=uid, email=email )
+                    send1.delay(uid=uid, email=email)
                     mes['code'] = 200
                     mes['message'] = '发送邮件成功'
                 except:
-                    mes[ 'code' ] = 10030
-                    mes[ 'message' ] = '未注册无效用户'
+                    mes['code'] = 10030
+                    mes['message'] = '未注册无效用户'
             else:
                 mes['code'] = 10010
                 mes['message'] = '验证码错误'
         else:
-            mes[ 'code' ] = 10020
-            mes[ 'message' ] = '邮箱格式错误'
+            mes['code'] = 10020
+            mes['message'] = '邮箱格式错误'
 
         return Response(mes)
 
@@ -161,7 +161,7 @@ class ThirdPartAPIView(APIView):
         res = eval(str(res))
         print(res)
         uid = res.get('uid')
-        u = ThirdPartyLogin.objects.filter(uuid=uid).first()
+        u = ThirdPartyLogin.objects.filter(uid=uid).first()
         if u:
             user = User.objects.get(id=u.user_id)
             jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -229,3 +229,10 @@ class ThirdPartAPIView(APIView):
                     ret['code'] = 601
                     ret['message'] = '绑定失败'
         return Response(ret)
+
+    def get(self, request):
+        ret = {}
+        code = request.GET.get('code')
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return redirect('http://127.0.0.1:8080/#/weibo_callback/?code=' + code)
