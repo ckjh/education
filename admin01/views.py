@@ -474,7 +474,7 @@ class CourseAPIView(APIView):
     def delete(self, request):  # 删除课程
         ret = {}
         try:
-            data = request.data
+            id = request.data['id']
             t = Course.objects.get(id=id)
             try:
                 delete_file(t.pic)

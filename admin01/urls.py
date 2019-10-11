@@ -26,7 +26,7 @@ urlpatterns = [
     path('path/', views.PathAPIView.as_view()),  # 路径管理
     path('stage/', views.PathStageView.as_view()),  # 阶段管理
     path('teacher/', views.TeacherAPIView.as_view()),  # 讲师管理
-    path('course/', views.CourseAPIView.as_view()),  # 课程管理
+    path('course/', views.CourseAPIView.as_view()),  # 课程管理 dataList
     path('price/', views.SetPriceAPIView.as_view()),
     path('video/', views.Video.as_view()),
     path('section/', views.SectionView.as_view()),

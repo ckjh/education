@@ -62,6 +62,7 @@ class RegAPIView(APIView):
         return Response(ret)
 
     def get(self, request):
+        # 激活账号
         ret = {'code': 600, 'message': '激活失败'}
         try:
             token = request.GET.get('token')
@@ -73,6 +74,7 @@ class RegAPIView(APIView):
             conn.hdel('user' + token, token)  # 删除原数据
             ret['code'] = 200
             ret['message'] = '激活成功'
+            return redirect('http://localhost:8080/#/?code=' + ret['message'])
         except Exception as e:
             print(e)
         return Response(ret)
@@ -86,21 +88,16 @@ class LoginAPIView(APIView):  # todo 登录
         user = User.objects.filter(username=username).first()
         res = {}
         if check_password(password, user.password):  # 查找用户 比对密码
-            if user.integral == 1:  # 如果未激活
-                res["code"] = 301
-                res["msg"] = "用户未在激活状态"
-            else:  # 激活了   提供令牌 作为 登录成功的标识
-                jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-                jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-                payload = jwt_payload_handler(user)  # 用户对象 处理器
-                # 通过jwt编码 生成token令牌
-                token = jwt_encode_handler(payload)
-
-                res["code"] = 200
-                res["token"] = token  # 自定义登录生成token
-                res["uid"] = user.id
-                res["username"] = username
-                res['meg'] = '登录成功'
+            jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+            jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+            payload = jwt_payload_handler(user)  # 用户对象 处理器
+            # 通过jwt编码 生成token令牌
+            token = jwt_encode_handler(payload)
+            res["code"] = 200
+            res["token"] = token  # 自定义登录生成token
+            res["uid"] = user.id
+            res["username"] = username
+            res['meg'] = '登录成功'
         else:  # 没有 找到用户 或密码错误
             res["code"] = 401
             res["msg"] = "用户名或密码错误"
@@ -184,8 +181,6 @@ class ThirdPartAPIView(APIView):
         username = request.data['username']
         password = request.data['password']
         uid = request.data.get("uid")
-        print(request.data)
-        print(uid)
         user = User.objects.filter(email=username).first()
         print(user.username)
 
@@ -195,12 +190,9 @@ class ThirdPartAPIView(APIView):
             if user and user.check_password(password):  # 查找用户 比对密码
                 ThirdPartyLogin.objects.create(user_id=user.id, uid=uid, type=1)
                 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-                print(1)
                 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-                print(2)
                 payload = jwt_payload_handler(user)  # 用户对象 处理器
                 # 通过jwt编码 生成token令牌
-                print(3)
                 token = jwt_encode_handler(payload)
                 ret["token"] = token  # 自定义登录生成token
                 ret["uid"] = user.id
@@ -220,6 +212,8 @@ class ThirdPartAPIView(APIView):
                                         password=make_password(password))
                     jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
                     jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+                    user = User.objects.filter(email=username).first()
+                    ThirdPartyLogin.objects.create(user_id=user.id, uid=uid, type=1)
                     payload = jwt_payload_handler(user)  # 用户对象 处理器
                     # 通过jwt编码 生成token令牌
                     token = jwt_encode_handler(payload)
