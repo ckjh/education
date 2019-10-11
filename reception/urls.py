@@ -24,4 +24,5 @@ urlpatterns = [
     path('getimagecode/', views.GetImageCode),  # 获取验证码图片
     path('forgetpwd/', views.ForGetPwd.as_view()),  # 忘记密码接口
     path('thirdLog/', views.ThirdPartAPIView.as_view()),  # 三方登录接口
+    path('showCourse/', views.ShowCoursesAPIView.as_view()),
 ]

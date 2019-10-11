@@ -2,14 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/admin01/migrations/0010_auto_20191011_1717.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/models.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/serializer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/education/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/education/settings.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reception/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/tests.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reception/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
