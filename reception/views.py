@@ -144,7 +144,6 @@ class ForGetPwd(APIView):
 
 class ThirdPartAPIView(APIView):
     def put(self, request):
-        ret = {}
         # 获取回调的code
         code = request.data['code']
         # 微博认证地址
@@ -159,9 +158,9 @@ class ThirdPartAPIView(APIView):
         })
         res = response.text
         res = eval(str(res))
-        print(res)
         uid = res.get('uid')
         u = ThirdPartyLogin.objects.filter(uid=uid).first()
+
         if u:
             user = User.objects.get(id=u.user_id)
             jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
@@ -178,24 +177,30 @@ class ThirdPartAPIView(APIView):
             res['uid'] = uid
             res["code"] = 600
             res['message'] = '未绑定本平台账号'
-        return Response(ret)
+        return Response(res)
 
     def post(self, request):
         ret = {}
-        username = request.data.get("username")
-        password = request.data.get("password")
+        username = request.data['username']
+        password = request.data['password']
         uid = request.data.get("uid")
-        print(username, password)
-        user = User.objects.filter(username=username).first()
+        print(request.data)
+        print(uid)
+        user = User.objects.filter(email=username).first()
+        print(user.username)
+
         # 判断用户是否存在
         if user:
             # 如果存在就去验证密码绑定
             if user and user.check_password(password):  # 查找用户 比对密码
                 ThirdPartyLogin.objects.create(user_id=user.id, uid=uid, type=1)
                 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+                print(1)
                 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+                print(2)
                 payload = jwt_payload_handler(user)  # 用户对象 处理器
                 # 通过jwt编码 生成token令牌
+                print(3)
                 token = jwt_encode_handler(payload)
                 ret["token"] = token  # 自定义登录生成token
                 ret["uid"] = user.id
@@ -206,7 +211,6 @@ class ThirdPartAPIView(APIView):
                 # 密码不对绑定失败
                 ret['code'] = 601
                 ret['message'] = '绑定失败'
-
         else:
             # 如果用户名不存在,从新注册
             if re.match("^[a-z0-9A-Z]+[-|a-z0-9A-Z._]+@([a-z0-9A-Z]+(-[a-z0-9A-Z]+)?\\.)+[a-z]{2,}$",
@@ -228,6 +232,7 @@ class ThirdPartAPIView(APIView):
                     # 用户名密码输入不合法就失败
                     ret['code'] = 601
                     ret['message'] = '绑定失败'
+        print(ret)
         return Response(ret)
 
     def get(self, request):
