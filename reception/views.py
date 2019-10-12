@@ -269,3 +269,6 @@ class PathDetailAPIView(APIView):
         ret['message'] = '成功'
         print(ret)
         return Response(ret)
+
+
+

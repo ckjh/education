@@ -363,7 +363,7 @@ class PathAPIView(APIView):
     def get(self, request):  # 展示路径
         ret = {}
         dataList = Path.objects.all()
-        dataList = PathSerializersModel(dataList, many=True)
+        dataList = LightPathSerializersModel(dataList, many=True)
         ret['dataList'] = dataList.data
         limit = request.GET.get('limit')
         if limit:
@@ -515,12 +515,20 @@ class CourseAPIView(APIView):
 
     def get(self, request):  # 展示课程
         ret = {}
-        dataList = Course.objects.all()
-        dataList = CourseSerializersModel(dataList, many=True)
+
         limit = request.GET.get('limit')
-        if limit:
+        id = request.GET.get('id')
+        if id:
+            c = Course.objects.get(id=id)
+            c = CourseSerializersModel(c, many=False)
+            ret['dataList'] = c.data
+        elif limit:
+            dataList = Course.objects.all()
             ret['dataList'] = dataList.data[:int(limit)]
-        ret['dataList'] = dataList.data
+        else:
+            dataList = Course.objects.all()
+            dataList = CourseSerializersModel(dataList, many=True)
+            ret['dataList'] = dataList.data
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
@@ -597,7 +605,11 @@ class SectionView(APIView):
     def get(self, request):
         mes = {}
         try:
-            section = Section.objects.all()
+            cid = request.GET.get('course_id')
+            if cid:
+                section = Section.objects.filter(course_id=cid).all()
+            else:
+                section = Section.objects.all()
             s = SectionSerializersModel(section, many=True)
             mes['code'] = 200
             mes['message'] = 'ok'

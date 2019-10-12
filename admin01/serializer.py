@@ -69,7 +69,7 @@ class SiteMessageSerializers(serializers.Serializer):
         return instance
 
 
-# 路径系列化类
+# 路径序列化类
 
 class PathSerializersModel(serializers.ModelSerializer):
     num = serializers.SerializerMethodField()
@@ -89,6 +89,21 @@ class PathSerializersModel(serializers.ModelSerializer):
             return sList.data
         except:
             return []
+
+    class Meta:
+        model = Path
+        fields = '__all__'
+
+
+class LightPathSerializersModel(serializers.ModelSerializer):
+    num = serializers.SerializerMethodField()
+
+    def get_num(self, row):
+        try:
+            n = Course.objects.filter(path_id=row.id).count()
+        except:
+            n = 0
+        return n
 
     class Meta:
         model = Path
