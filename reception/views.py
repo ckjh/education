@@ -233,37 +233,24 @@ class ThirdPartAPIView(APIView):
 
 
 class ShowCoursesAPIView(APIView):
-
     def get(self, request):  # 展示课程
         ret = {}
         sale = request.GET.get('sale')
         tag = request.GET.get('tag')
         member = request.GET.get('member')
         sort = request.GET.get('sort')  # sort 排序方式 其中 create_time 最新,learn 最热
-        if sale == '-1': sale = None  # 是否上线 -1 是未勾选，0未上线，1 已上线；
-        if tag == '-1': tag = None  # 标签id -1是全部
-        if member == '-1': member = None  # member 是否为会员课程，0 否 1 是 -1 全部
-        # 经过判断,将值为-1 的设置为None 不再纳入查询条件,实现多条件筛选
-        print(sale, tag, member)
-        if tag and member and sale:
-            dataList = Course.objects.filter(member=member, tag=tag, online=sale).order_by(sort)
-        elif sale and tag:
-            dataList = Course.objects.filter(online=sale, tag=tag).order_by(sort)
-        elif sale and member:
-            dataList = Course.objects.filter(online=sale, member=member).order_by(sort)
-        elif tag and member:
-            dataList = Course.objects.filter(online=sale, member=member).order_by(sort)
-        elif sale:
-            dataList = Course.objects.filter(online=sale).order_by(sort)
-        elif tag:
-            dataList = Course.objects.filter(tag=tag).order_by(sort)
-        elif member:
-            dataList = Course.objects.filter(member=member).order_by(sort)
-        else:
-            print('全部')
-            dataList = Course.objects.order_by(sort)
-        dataList = CourseSerializersModel(dataList, many=True)
-        ret['dataList'] = dataList.data
-        ret['code'] = 200
-        ret['message'] = '成功'
+        searchDict = {}
+        if sale != '-1': searchDict['online'] = sale  # 是否上线 -1 是未勾选，0未上线，1 已上线；
+        if tag != '-1': searchDict['tag'] = tag  # 标签id -1是全部
+        if member != '-1': searchDict['member'] = member  # member 是否为会员课程，0 否 1 是 -1 全部
+        try:
+            dataList = Course.objects.filter(**searchDict).order_by(sort)
+            dataList = CourseSerializersModel(dataList, many=True)
+            ret['dataList'] = dataList.data
+            ret['code'] = 200
+            ret['message'] = '成功'
+        except Exception as ex:
+            print(ex)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
         return Response(ret)

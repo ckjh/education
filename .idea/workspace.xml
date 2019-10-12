@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reception/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reception/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -223,6 +223,7 @@
       <workItem from="1570543584093" duration="3582000" />
       <workItem from="1570575843346" duration="4368000" />
       <workItem from="1570582302439" duration="16469000" />
+      <workItem from="1570839145665" duration="7406000" />
     </task>
     <servers />
   </component>
@@ -255,6 +256,6 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/education$tests.coverage" NAME="tests Coverage Results" MODIFIED="1570264902994" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/admin01" />
-    <SUITE FILE_PATH="coverage/education$tests__1_.coverage" NAME="tests (1) Coverage Results" MODIFIED="1570777224909" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/reception" />
+    <SUITE FILE_PATH="coverage/education$tests__1_.coverage" NAME="tests (1) Coverage Results" MODIFIED="1570845061802" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/reception" />
   </component>
 </project>
