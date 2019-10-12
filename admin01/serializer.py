@@ -73,14 +73,22 @@ class SiteMessageSerializers(serializers.Serializer):
 
 class PathSerializersModel(serializers.ModelSerializer):
     num = serializers.SerializerMethodField()
+    stageList = serializers.SerializerMethodField()
 
     def get_num(self, row):
         try:
             n = Course.objects.filter(path_id=row.id).count()
         except:
-            n=0
+            n = 0
         return n
 
+    def get_stageList(self, row):
+        try:
+            sList = PathStage.objects.filter(path_id=row.id).all()
+            sList = PathStageSerializersModel(sList, many=True)
+            return sList.data
+        except:
+            return []
 
     class Meta:
         model = Path
@@ -111,6 +119,15 @@ class PathSerializers(serializers.Serializer):
 class PathStageSerializersModel(serializers.ModelSerializer):
     path_name = serializers.CharField(source='path.name')
     path_id = serializers.CharField()
+    courseList = serializers.SerializerMethodField()
+
+    def get_courseList(self, row):
+        try:
+            cList = Course.objects.filter(pathstage_id=row.id).all()
+            cList = CourseSerializersModel(cList, many=True)
+            return cList.data
+        except:
+            return []
 
     class Meta:
         model = PathStage

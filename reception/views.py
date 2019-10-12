@@ -5,7 +5,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
+from admin01.serializer import *
 from admin01.serializer import CourseSerializersModel
 from utils.redis_pool import POOL
 from reception.task import *
@@ -253,4 +253,19 @@ class ShowCoursesAPIView(APIView):
             print(ex)
             ret['code'] = 601
             ret['message'] = '数据库错误'
+        return Response(ret)
+
+
+class PathDetailAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        id = request.GET.get('id')
+        print(id)
+        path = Path.objects.get(id=id)
+        print(path)
+        path = PathSerializersModel(path, many=False)
+        ret['pathData'] = path.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        print(ret)
         return Response(ret)

@@ -25,4 +25,5 @@ urlpatterns = [
     path('forgetpwd/', views.ForGetPwd.as_view()),  # 忘记密码接口
     path('thirdLog/', views.ThirdPartAPIView.as_view()),  # 三方登录接口
     path('showCourse/', views.ShowCoursesAPIView.as_view()),
+    path('path/', views.PathDetailAPIView.as_view())
 ]
