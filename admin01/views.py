@@ -46,6 +46,17 @@ def get_pic_url(pic):
         return file
 
 
+# 获取视频地址
+class Video(APIView):
+    def post(self, request):
+        data = request.data
+        video = get_pic_url(data['file'])
+        print(data)
+        mes = {}
+        mes['url'] = video
+        return Response(mes)
+
+
 class LevelAPIView(APIView):
     def post(self, request):  # 添加等级
         ret = {}
@@ -385,7 +396,7 @@ class PathStageView(APIView):
         try:
             id = request.GET.get('id')
             if id:
-                tags = PathStage.objects.filter(path_id=int(id)).all()
+                tags = PathStage.objects.filter(path_id=int(id)).order_by('sort')
             else:
                 tags = PathStage.objects.all()
             tags = PathStageSerializersModel(tags, many=True)
@@ -623,7 +634,7 @@ class SectionView(APIView):
         try:
             cid = request.GET.get('course_id')
             if cid:
-                section = Section.objects.filter(course_id=cid).all()
+                section = Section.objects.filter(course_id=cid).order_by('sort')
             else:
                 section = Section.objects.all()
             s = SectionSerializersModel(section, many=True)
@@ -656,7 +667,7 @@ class SectionView(APIView):
     def put(self, request):
         data = request.data.copy()
         c1 = Section.objects.get(id=data['id'])
-        if data['pic'] == type(''):
+        if c1.video == data['video']:
             pass
         else:
             delete_file(c1.pic)
@@ -742,17 +753,6 @@ class SetPriceAPIView(APIView):
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
-
-
-# 获取视频地址
-class Video(APIView):
-    def post(self, request):
-        data = request.data
-        video = get_pic_url(data['file'])
-        print(data)
-        mes = {}
-        mes['url'] = video
-        return Response(mes)
 
 
 # http://116.62.155.103:8888/group1\M00/00/00/rBAdwl2eAzeAOA4TAAEsxfGKC08842.jpg
