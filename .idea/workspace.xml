@@ -3,10 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/serializer.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/admin01/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reception/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/urls.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reception/tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/tests.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -64,7 +62,7 @@
     <property name="DatabaseDriversLRU" value="mysql" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="D:/vue/my-project" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../压缩包管理/knowledge/day01/16.md" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -221,7 +219,9 @@
       <workItem from="1570575843346" duration="4368000" />
       <workItem from="1570582302439" duration="16469000" />
       <workItem from="1570839145665" duration="16776000" />
-      <workItem from="1570868285558" duration="5679000" />
+      <workItem from="1570868285558" duration="9968000" />
+      <workItem from="1570933759222" duration="329000" />
+      <workItem from="1570934136052" duration="16980000" />
     </task>
     <servers />
   </component>

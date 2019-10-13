@@ -325,7 +325,7 @@ class PathAPIView(APIView):
         ret = {}
         try:
             data = request.data
-            t = Path.objects.get(id=id)
+            t = Path.objects.get(id=data['id'])
             try:
                 delete_file(t.pic)
             except:
@@ -342,9 +342,13 @@ class PathAPIView(APIView):
     def put(self, request):  # 修改路径
         ret = {}
         try:
-            data = request.data.copy()
-            data['pic'] = get_pic_url(data['pic'])
             c1 = Path.objects.get(id=request.data['id'])
+            data = request.data.copy()
+            if data['pic'] == type(''):
+                pass
+            else:
+                delete_file(c1.pic)
+                data['pic'] = get_pic_url(data['pic'])
             ser = PathSerializers(c1, data=data)
             if ser.is_valid():
                 ser.save()
@@ -496,8 +500,12 @@ class CourseAPIView(APIView):
         ret = {}
         try:
             data = request.data.copy()
-            data['pic'] = get_pic_url(data['pic'])
             c1 = Course.objects.get(id=request.data['id'])
+            if data['pic'] == type(''):
+                pass
+            else:
+                delete_file(c1.pic)
+                data['pic'] = get_pic_url(data['pic'])
             ser = CourseSerializers(c1, data=data)
             if ser.is_valid():
                 ser.save()
@@ -524,6 +532,7 @@ class CourseAPIView(APIView):
             ret['dataList'] = c.data
         elif limit:
             dataList = Course.objects.all()
+            dataList = CourseSerializersModel(dataList, many=True)
             ret['dataList'] = dataList.data[:int(limit)]
         else:
             dataList = Course.objects.all()
@@ -562,7 +571,6 @@ class TeacherAPIView(APIView):
             t = Teacher.objects.get(id=id)
             try:
                 delete_file(t.pic)
-                delete_file(t.pic)
             except:
                 pass
             t.delete()
@@ -575,9 +583,12 @@ class TeacherAPIView(APIView):
 
     def put(self, request):
         data = request.data.copy()
-        print(data)
-        data['pic'] = get_pic_url(data['pic'])
         c1 = Teacher.objects.get(id=data['id'])
+        if data['pic'] == type(''):
+            pass
+        else:
+            delete_file(c1.pic)
+            data['pic'] = get_pic_url(data['pic'])
         ser = TeacherSerializers(c1, data=data)
         mes = {}
         if ser.is_valid():
@@ -592,8 +603,13 @@ class TeacherAPIView(APIView):
         return Response(mes)
 
     def get(self, request):
-        tea = Teacher.objects.all()
-        u = TeacherSerializersModel(tea, many=True)
+        id = request.GET.get('id')
+        if id:
+            tea = Teacher.objects.filter(id=id).first()
+            u = TeacherSerializersModel(tea, many=False)
+        else:
+            tea = Teacher.objects.all()
+            u = TeacherSerializersModel(tea, many=True)
         mes = {}
         mes['code'] = 200
         mes['dataList'] = u.data
@@ -622,7 +638,6 @@ class SectionView(APIView):
     def post(self, request):
         mes = {}
         data = request.data
-        # data['video'] = get_pic_url(data['video'])
         if data:
             s = SectionSerializers(data=data)
             if s.is_valid():
@@ -640,9 +655,12 @@ class SectionView(APIView):
 
     def put(self, request):
         data = request.data.copy()
-        data['video'] = get_pic_url(data['video'])
-        print(data)
         c1 = Section.objects.get(id=data['id'])
+        if data['pic'] == type(''):
+            pass
+        else:
+            delete_file(c1.pic)
+            data['video'] = get_pic_url(data['video'])
         ser = SectionSerializers(c1, data=data)
         mes = {}
         if ser.is_valid():
@@ -779,7 +797,6 @@ class CouponView(APIView):
         data = request.data
         print(type(data['start_time']))
         print(data)
-        # data['video'] = get_pic_url(data['video'])
         if data:
             s = CouponSerializer(data=data)
             if s.is_valid():

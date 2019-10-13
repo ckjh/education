@@ -14,3 +14,7 @@ def func():
 
 
 func()
+c=[22,33]
+d=[55,66] #循环引用`
+c.append(d)#c的引用+1=2
+d.append(c)#d的引用+1=2
