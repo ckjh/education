@@ -84,7 +84,7 @@ class PathSerializersModel(serializers.ModelSerializer):
 
     def get_stageList(self, row):
         try:
-            sList = PathStage.objects.filter(path_id=row.id).all()
+            sList = PathStage.objects.filter(path_id=row.id).order_by('sort')
             sList = PathStageSerializersModel(sList, many=True)
             return sList.data
         except:
