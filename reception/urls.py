@@ -26,5 +26,6 @@ urlpatterns = [
     path('thirdLog/', views.ThirdPartAPIView.as_view()),  # 三方登录接口
     path('showCourse/', views.ShowCoursesAPIView.as_view()),
     path('path/', views.PathDetailAPIView.as_view()),
+    path('webssh/', views.webssh),
     # path('course/', views.CourseDetailAPIView.as_view())
 ]
