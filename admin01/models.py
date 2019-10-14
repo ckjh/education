@@ -394,7 +394,7 @@ class Coupon(Base):
     course = models.IntegerField(verbose_name='类型为3时指定课程')
     start_time = models.DateTimeField(verbose_name='会员开始时间', default=timezone.now())
     end_time = models.DateTimeField(verbose_name='会员结束时间', default=timezone.now())
-    status = models.IntegerField(verbose_name='使用状态')  # 1可用，2过期
+    status = models.IntegerField(verbose_name='使用状态')  # 1可用，2不可用
     condition = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='满多少钱可以使用')
     money = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='优惠券金额')
 

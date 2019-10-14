@@ -332,7 +332,7 @@ import re
 import threading
 import time
 import sys
-
+import datetime
 
 host = settings.IP
 username = settings.USER
@@ -406,4 +406,85 @@ class MyPath(APIView):
             except:
                 mes['code'] = 10010
                 mes['message'] = '数据发生错误'
+        return Response(mes)
+
+from reception.serializers import *
+#我的优惠券
+class MyCoupon(APIView):
+    def get( self, request):
+       user_id =  request.GET.get('user_id')
+       mes = {}
+
+       if user_id:
+           u = Usercoupon.objects.filter(user_id=user_id).all()
+           usercoupon = UserCouponModelSerializer(u,many=True)
+           mes['code'] =200
+           mes['couponList'] = usercoupon.data
+           mes['message'] ='ok'
+       else:
+           mes['code'] =10010
+           mes['message'] ='用户id不存在请登录'
+
+       return Response(mes)
+
+    def post( self, request):
+        data = request.data
+        user_id = request.data['user_id'] #用户id
+        coupon_id =  request.data['coupon_id'] # 优惠券id
+        coupon = Coupon.objects.filter(id=coupon_id).first()
+        user = Member.objects.get(user_id=user_id)
+        data['start_time'] =  datetime.datetime.now()
+        data['end_time'] =  datetime.datetime.now()
+        data['money'] =  coupon.money
+        data['type'] =  coupon.type
+        data['condition'] =coupon.condition
+        data['is_use'] =coupon.status
+        data['code'] =str ( uuid.uuid1 () )
+        mes = {}
+        if coupon.count > 1 and coupon.status ==1:
+            if coupon.type ==1 and user:# 首次开通会员领取
+                u = UserCouponSerializer(data=data)
+                if u.is_valid():
+                    u.save()
+                    mes[ 'code' ] = 200
+                    mes[ 'message' ] = '领取成功'
+                else:
+                    print(u.errors)
+                    mes[ 'code' ] = 10010
+                    mes[ 'message' ] = '领取失败'
+            elif coupon.type ==2:
+                u = UserCouponSerializer(data=data)
+                if u.is_valid():
+                    u.save()
+                    mes[ 'code' ] = 200
+                    mes[ 'message' ] = '领取成功'
+                else:
+                    print(u.errors)
+                    mes[ 'code' ] = 10010
+                    mes[ 'message' ] = '领取失败'
+            elif coupon.type ==3:
+                u = UserCouponSerializer ( data=data )
+                if u.is_valid ():
+                    u.save ()
+                    mes[ 'code' ] = 200
+                    mes[ 'message' ] = '领取成功'
+                else:
+                    print ( u.errors )
+                    mes[ 'code' ] = 10010
+                    mes[ 'message' ] = '领取失败'
+
+            else:
+                u = UserCouponSerializer ( data=data )
+                if u.is_valid ():
+                    u.save ()
+                    mes[ 'code' ] = 200
+                    mes[ 'message' ] = '领取成功'
+                else:
+                    print ( u.errors )
+                    mes[ 'code' ] = 10010
+                    mes[ 'message' ] = '领取失败'
+        else:
+            mes[ 'code' ] = 10010
+            mes[ 'message' ] = '优惠券数量不够'
+
         return Response(mes)

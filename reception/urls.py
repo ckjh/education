@@ -27,5 +27,6 @@ urlpatterns = [
     path('showCourse/', views.ShowCoursesAPIView.as_view()),
     path('path/', views.PathDetailAPIView.as_view()),
     path('webssh/', views.webssh),
-    path('mypath/', views.MyPath.as_view())
+    path('mypath/', views.MyPath.as_view()),
+    path('mycoupon/', views.MyCoupon.as_view())
 ]
