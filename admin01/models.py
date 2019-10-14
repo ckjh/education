@@ -407,8 +407,8 @@ class Usercoupon(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     type = models.IntegerField(verbose_name='优惠券类型', default=0)  # 1首次注册会员送  2全场能用  3指定商品  4指定会员
     code = models.IntegerField(verbose_name='优惠券唯一编码', default='')
-    start_time = models.DateTimeField(auto_now=True, verbose_name='优惠券开始时间')
-    end_time = models.DateTimeField(auto_now=True, verbose_name='优惠券结束时间')
+    start_time = models.DateTimeField( verbose_name='优惠券开始时间', default=timezone.now())
+    end_time = models.DateTimeField( verbose_name='优惠券结束时间', default=timezone.now())
     money = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='优惠券金额')
     condition = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='满多少钱可以使用')
     is_use = models.IntegerField(verbose_name='是否使用')  # 0未使用，1使用
