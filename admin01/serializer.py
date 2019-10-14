@@ -358,3 +358,5 @@ class CouponSerializer(serializers.Serializer):
         instance.money = validated_data['money']
         instance.save()
         return instance
+
+

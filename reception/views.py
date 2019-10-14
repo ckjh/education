@@ -1,4 +1,11 @@
 import requests
+import uuid
+import json
+import redis
+import paramiko
+import re
+import threading
+import datetime
 from django.shortcuts import render, HttpResponse, redirect
 from rest_framework_jwt.settings import api_settings  # jwt中的配置项 api_settings
 from django.contrib.auth.hashers import check_password, make_password
@@ -10,12 +17,7 @@ from admin01.serializer import CourseSerializersModel
 from utils.redis_pool import POOL
 from reception.task import *
 from utils.captcha.captcha import captcha
-from admin01.models import *
-import uuid
-import json
-import redis
-import paramiko
-import re
+from reception.serializers import *
 
 
 # 验证码 获取文本
@@ -271,15 +273,22 @@ class PathDetailAPIView(APIView):
         return Response(ret)
 
 
+from dwebsocket import accept_websocket
+
+host = settings.IP
+username = settings.USER
+password = settings.PASSWORD
 
 
+def _ssh(host, username, password, port=22):
+    sh = paramiko.SSHClient()
+    sh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    sh.connect(host, username=username, password=password)
+    channle = sh.invoke_shell(term='xterm')
+    return channle
 
-from dwebsocket import * 
-import paramiko
-import threading
-import time
 
-def recv_ssh_msg(channle,ws):
+def recv_ssh_msg(channle, ws):
     '''
         channle: 建立好的SSH连接通道
         这个函数会不停的接收ssh通道返回的命令
@@ -287,53 +296,145 @@ def recv_ssh_msg(channle,ws):
     '''
     while not channle.exit_status_ready():
         try:
-            buf = channle.recv(1024) # 接收 蓝色
-            ws.send(buf) # 巧克力色
+            buf = channle.recv(1024)  # 接收 蓝色
+            ws.send(buf)  # 巧克力色
         except:
             break
 
+
 @accept_websocket
 def webssh(request):
-    '''
-        1: 接收前端(ws)的命令，发给后台(ssh)
-        2: 接收后台的返回结果，给到前端
-    '''
+    ''' 1: 接收前端(ws)的命令，发给后台(ssh)
+    2: 接收后台的返回结果，给到前端 '''
     if request.is_websocket:
-        # 判断是否属于websocket连接
-        sh = paramiko.SSHClient()
-        
-        sh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        sh.connect(host, username=username, password=password)
-        channle = sh.invoke_shell(term='xterm') #
-        ws = request.websocket 
-        t = threading.Thread(target=recv_ssh_msg,args=(channle,ws))
-        t.setDaemon(True) # 会随着主进程的消亡而消亡
-        t.start()
-        # 连接的客户端套接字对象
-            # ws.recv() ws.read() ws.wait() 接受前端发来的数据
-            # ws.send() ws.send() 发送给浏览器数据
-        while not channle.exit_status_ready():
-            # time.sleep(0.1)
-            cmd = ws.wait() # 前台发来命令 红色
+        channle = _ssh(host, username=username, password=password)
+        ws = request.websocket
+        t = threading.Thread(target=recv_ssh_msg, args=(channle, ws))
+        t.setDaemon(True)
+        t.start()  # 线程开启
+        while 1:
+            cmd = ws.wait()  # 阻塞接收前端发来的命令
             if cmd:
-                # 转交给后端
-                channle.send(cmd) # 黄色
-            else:
-                # cmd为空，连接断开的标志
+                channle.send(cmd)  # 由SSH通道转交给Linux环境
+            else:  # 连接断开 跳出循环
                 break
-        ws.close()
-        channle.close()
-    return HttpResponse('ok')
+            ws.close()  # 释放对应套接字资源
+            channle.close()
 
 
-from django.shortcuts import render
-from dwebsocket import accept_websocket
-import time
-import paramiko 
-import re
-import threading
-import time
-import sys
-host = settings.IP
-username = settings.USER
-password = settings.PASSWORD
+# 加入路径
+class MyPath(APIView):
+    def post(self, request):
+        path_id = request.data['path_id']
+        user_id = request.data['user_id']
+        u = UserPath.objects.filter(path_id=path_id, user_id=user_id).first()
+        mes = {}
+        if u:  # 存在即删除
+            UserPath.objects.filter(path_id=path_id, user_id=user_id).delete()
+            mes['code'] = 201
+            mes['message'] = '取消路径成功!'
+        else:
+            try:
+                UserPath.objects.create(path_id=path_id, user_id=user_id)
+                mes['code'] = 200
+                mes['message'] = '已加入我的路径,可在用户中心查看!'
+            except:
+                mes['code'] = 10010
+                mes['message'] = '数据发生错误'
+        return Response(mes)
+
+
+# 我的优惠券
+class MyCoupon(APIView):
+    def get(self, request):
+        user_id = request.GET.get('user_id')
+        mes = {}
+
+        if user_id:
+            u = Usercoupon.objects.filter(user_id=user_id).all()
+            usercoupon = UserCouponModelSerializer(u, many=True)
+            mes['code'] = 200
+            mes['couponList'] = usercoupon.data
+            mes['message'] = 'ok'
+        else:
+            mes['code'] = 10010
+            mes['message'] = '用户id不存在请登录'
+
+        return Response(mes)
+
+    def post(self, request):
+        data = request.data.copy()
+        user_id = request.data['user_id']  # 用户id
+        coupon_id = request.data['coupon_id']  # 优惠券id
+        coupon = Coupon.objects.filter(id=coupon_id).first()
+        user = Member.objects.get(user_id=user_id)
+        data['start_time'] = datetime.datetime.now()
+        data['end_time'] = datetime.datetime.now()
+        data['money'] = coupon.money
+        data['type'] = coupon.type
+        data['condition'] = coupon.condition
+        data['is_use'] = coupon.status
+        data['code'] = str(uuid.uuid1())
+        mes = {}
+        if coupon.count > 1 and coupon.status == 1:
+            if coupon.type == 1 and user:  # 首次开通会员领取
+                u = UserCouponSerializer(data=data)
+                if u.is_valid():
+                    u.save()
+                    mes['code'] = 200
+                    mes['message'] = '领取成功'
+                else:
+                    print(u.errors)
+                    mes['code'] = 10010
+                    mes['message'] = '领取失败'
+            elif coupon.type == 2:
+                u = UserCouponSerializer(data=data)
+                if u.is_valid():
+                    u.save()
+                    mes['code'] = 200
+                    mes['message'] = '领取成功'
+                else:
+                    print(u.errors)
+                    mes['code'] = 10010
+                    mes['message'] = '领取失败'
+            elif coupon.type == 3:
+                u = UserCouponSerializer(data=data)
+                if u.is_valid():
+                    u.save()
+                    mes['code'] = 200
+                    mes['message'] = '领取成功'
+                else:
+                    print(u.errors)
+                    mes['code'] = 10010
+                    mes['message'] = '领取失败'
+
+            else:
+                u = UserCouponSerializer(data=data)
+                if u.is_valid():
+                    u.save()
+                    mes['code'] = 200
+                    mes['message'] = '领取成功'
+                else:
+                    print(u.errors)
+                    mes['code'] = 10010
+                    mes['message'] = '领取失败'
+        else:
+            mes['code'] = 10010
+            mes['message'] = '优惠券数量不够'
+        if mes['code'] == 200:
+            coupon.count_ -= 1
+            coupon.save()
+        return Response(mes)
+
+
+class UserInfoAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        user_id = request.GET.get('user_id')
+        print(user_id)
+        user = User.objects.get(id=user_id)
+        user = UserSerializersModel(user)
+        ret['userInfo'] = user.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)

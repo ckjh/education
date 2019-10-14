@@ -229,7 +229,7 @@ class ConditionAPIView(APIView):
         try:
             p = request.GET.get('p')
             conditions = UserLevelCondition.objects.all()
-            paginator = Paginator(conditions, 2)
+            paginator = Paginator(conditions, 10)
             conditions = paginator.page(int(p))
             conditions = ConditionSerializersModel(conditions, many=True)
             ret['conditions'] = conditions.data
@@ -541,6 +541,7 @@ class CourseAPIView(APIView):
             c = Course.objects.get(id=id)
             c = CourseSerializersModel(c, many=False)
             ret['dataList'] = c.data
+            print(ret)
         elif limit:
             dataList = Course.objects.all()
             dataList = CourseSerializersModel(dataList, many=True)
@@ -633,6 +634,7 @@ class SectionView(APIView):
         mes = {}
         try:
             cid = request.GET.get('course_id')
+
             if cid:
                 section = Section.objects.filter(course_id=cid).order_by('sort')
             else:
@@ -710,6 +712,7 @@ class SetPriceAPIView(APIView):
         priceList = Price.objects.filter(course_id=course_id)
         priceList = PriceSerializersModel(priceList, many=True)
         ret['dataList'] = priceList.data
+        print(ret)
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
