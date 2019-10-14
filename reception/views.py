@@ -19,6 +19,8 @@ from reception.task import *
 from utils.captcha.captcha import captcha
 from reception.serializers import *
 
+import hashlib
+
 
 # 验证码 获取文本
 def GetImageCode(request):
@@ -364,8 +366,17 @@ class MyCoupon(APIView):
 
     def post(self, request):
         data = request.data.copy()
+        mes = {}
         user_id = request.data['user_id']  # 用户id
         coupon_id = request.data['coupon_id']  # 优惠券id
+        code = hashlib.md5(
+            str('user' + user_id + 'coupon' + coupon_id).encode('utf-8')).hexdigest()  # 当该用户和同一优惠券搭配时生成相同的数据指纹
+        myCoupon = Usercoupon.objects.filter(code=code)  # 根据code 码判断用户是否已经领取
+        if myCoupon:
+            mes['code'] = 10010
+            mes['message'] = '领取失败'
+            return Response(mes)
+        data['code'] = code
         coupon = Coupon.objects.filter(id=coupon_id).first()
         user = Member.objects.get(user_id=user_id)
         data['start_time'] = datetime.datetime.now()
@@ -374,8 +385,6 @@ class MyCoupon(APIView):
         data['type'] = coupon.type
         data['condition'] = coupon.condition
         data['is_use'] = coupon.status
-        data['code'] = str(uuid.uuid1())
-        mes = {}
         if coupon.count > 1 and coupon.status == 1:
             if coupon.type == 1 and user:  # 首次开通会员领取
                 u = UserCouponSerializer(data=data)
@@ -422,7 +431,7 @@ class MyCoupon(APIView):
             mes['code'] = 10010
             mes['message'] = '优惠券数量不够'
         if mes['code'] == 200:
-            coupon.count_ -= 1
+            coupon.count -= 1
             coupon.save()
         return Response(mes)
 
