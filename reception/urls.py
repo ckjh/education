@@ -17,6 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from reception import views
 from reception import pay
+
 app_name = 'reception'
 urlpatterns = [
     path('login/', views.LoginAPIView.as_view()),  # 登录
@@ -30,5 +31,6 @@ urlpatterns = [
     path('pay/', pay.page1),
     path('mypath/', views.MyPath.as_view()),
     path('mycoupon/', views.MyCoupon.as_view()),
-    path('user/', views.UserInfoAPIView.as_view())
+    path('user/', views.UserInfoAPIView.as_view()),
+    path('memberOrder/', views.MemberOrderAPIView.as_view())
 ]

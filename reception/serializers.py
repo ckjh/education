@@ -19,8 +19,6 @@ class UserCouponSerializer(serializers.Serializer):
     condition = serializers.DecimalField(max_digits=7, decimal_places=2)
     is_use = serializers.IntegerField()  # 0未使用，1使用
 
-    class Meta:
-        db_table = 'usercoupon'
 
     def create(self, data):
         usercoupon = Usercoupon.objects.create(**data)
@@ -50,3 +48,20 @@ class UserSerializersModel(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = '__all__'
+
+
+class MemberOrderSerializer(serializers.Serializer):
+    order_sn = serializers.CharField(max_length=100)
+    user_id = serializers.IntegerField()
+    level_id = serializers.IntegerField()
+    time = serializers.IntegerField()
+    amount = serializers.DecimalField(max_digits=7, decimal_places=2)
+    pay_type = serializers.IntegerField()
+    invitation_code = serializers.CharField(default='')
+
+    class Meta:
+        db_table = MemberOrder
+
+    def create(self, data):
+        m = MemberOrder.objects.create(**data)
+        return m

@@ -634,9 +634,10 @@ class SectionView(APIView):
         mes = {}
         try:
             cid = request.GET.get('course_id')
-
             if cid:
                 section = Section.objects.filter(course_id=cid).order_by('sort')
+            elif id:
+                section = Section.objects.get(id=id)
             else:
                 section = Section.objects.all()
             s = SectionSerializersModel(section, many=True)
@@ -841,3 +842,13 @@ class CouponView(APIView):
             mes['code'] = 400
             mes['msg'] = "删除失败"
         return Response(mes)
+
+
+class RuleAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        rule=Rule.objects.first()
+        ret['rule']=rule.ratio
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)

@@ -76,7 +76,8 @@ class RegAPIView(APIView):
             # conn.hgetall()
             user = conn.hget('user' + token, token)  # 从redis获取用户
             user = json.loads(user)  # 转成字典
-            User.objects.create(email=user['email'], username=user['email'], password=make_password(user['password']))
+            User.objects.create(email=user['email'], username=user['email'], password=make_password(user['password']),
+                                invitation_code=token)
             conn.hdel('user' + token, token)  # 删除原数据
             ret['code'] = 200
             ret['message'] = '激活成功'
@@ -446,4 +447,36 @@ class UserInfoAPIView(APIView):
         ret['userInfo'] = user.data
         ret['code'] = 200
         ret['message'] = '成功'
+        return Response(ret)
+
+
+class MemberOrderAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+    def post(self, request):
+        ret = {}
+        data = request.data.copy()
+        print(data)
+        # 验证获取的数据
+        level = UserLevelCondition.objects.filter(level_id=data['level_id']).first()
+        user = User.objects.get(id=data['user_id'])
+        rule = Rule.objects.first()
+        if user.integral > int(data['num']) and level:
+            data['time'] = level.time
+            data['amount'] = level.amount - rule.ratio * int(data['num'])
+            data['order_sn'] = str(uuid.uuid1()).replace('-', '')
+            m = MemberOrderSerializer(data=data)
+            print(data)
+            if m.is_valid():
+                m.save()
+                ret['code'] = 200
+                ret['message'] = '成功'
+            else:
+                print(m.errors)
+                ret['code'] = 600
+                ret['message'] = '失败'
         return Response(ret)
