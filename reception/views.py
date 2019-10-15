@@ -18,7 +18,7 @@ from utils.redis_pool import POOL
 from reception.task import *
 from utils.captcha.captcha import captcha
 from reception.serializers import *
-
+from django.db import transaction
 import hashlib
 
 
@@ -73,7 +73,7 @@ class RegAPIView(APIView):
         try:
             token = request.GET.get('token')
             conn = redis.Redis(connection_pool=POOL)
-            # conn.hgetall()
+
             user = conn.hget('user' + token, token)  # 从redis获取用户
             user = json.loads(user)  # 转成字典
             User.objects.create(email=user['email'], username=user['email'], password=make_password(user['password']),
@@ -371,7 +371,8 @@ class MyCoupon(APIView):
         user_id = request.data['user_id']  # 用户id
         coupon_id = request.data['coupon_id']  # 优惠券id
         code = hashlib.md5(
-            str('user' + user_id + 'coupon' + coupon_id).encode('utf-8')).hexdigest()  # 当该用户和同一优惠券搭配时生成相同的数据指纹
+            str('user' + str(user_id) + 'coupon' + str(coupon_id)).encode(
+                'utf-8')).hexdigest()  # 当该用户和同一优惠券搭配时生成相同的数据指纹
         myCoupon = Usercoupon.objects.filter(code=code)  # 根据code 码判断用户是否已经领取
         if myCoupon:
             mes['code'] = 10010
@@ -452,31 +453,66 @@ class UserInfoAPIView(APIView):
 
 class MemberOrderAPIView(APIView):
     def get(self, request):
+        order_sn = request.GET.get('out_trade_no')
+        trade_no = request.GET.get('trade_no')
         ret = {}
+        conn = redis.Redis(connection_pool=POOL)
+        order = conn.hget('memberOrder' + str(order_sn), str(order_sn))
+        order = json.loads(order)
+        order['code'] = trade_no
+        o = MemberOrderSerializer(data=order)
+        # 更新积分
+        if int(order['num']) > 0:
+            user = User.objects.get(id=int(order['user_id']))
+            user.integral -= int(order['num'])
+            user.save()
+        if order['invitation_code'] != '':
+            # 为邀请者加积分,通过邀请码找到邀请者
+            invitationUser = User.objects.filter(invitation_code=order['invitation_code']).first()
+            invitationUser.integral += 100
+            invitationUser.save()
+        d1 = datetime.datetime.now()
+        # 计算过期时间
+        d3 = d1 + datetime.timedelta(days=31 * int(order['time']))
+        # 向维护会员过期时间的表中添加数据
+        Member.objects.create(user_id=int(order['user_id']), level_id=int(order['level_id']), start_time=d1,
+                              end_time=d3)
+        if o.is_valid():
+            o.save()
+        else:
+            print(o.errors)
         ret['code'] = 200
         ret['message'] = '成功'
-        return Response(ret)
+        return redirect('http://localhost:8080/userCenter')
 
     def post(self, request):
         ret = {}
         data = request.data.copy()
-        print(data)
         # 验证获取的数据
-        level = UserLevelCondition.objects.filter(level_id=data['level_id']).first()
-        user = User.objects.get(id=data['user_id'])
-        rule = Rule.objects.first()
-        if user.integral > int(data['num']) and level:
-            data['time'] = level.time
-            data['amount'] = level.amount - rule.ratio * int(data['num'])
-            data['order_sn'] = str(uuid.uuid1()).replace('-', '')
-            m = MemberOrderSerializer(data=data)
-            print(data)
-            if m.is_valid():
-                m.save()
-                ret['code'] = 200
-                ret['message'] = '成功'
-            else:
-                print(m.errors)
-                ret['code'] = 600
-                ret['message'] = '失败'
+        level = UserLevelCondition.objects.filter(level_id=data['level_id']).first()  # 获取等级条件
+        user = User.objects.get(id=data['user_id'])  # 获取用户信息
+        rule = Rule.objects.first()  # 获取抵扣比例
+        member = Member.objects.filter(user_id=int(data['user_id']))
+        if member:
+            ret['code'] = 1000
+            ret['message'] = '您已成为会员'
+            return Response(ret)
+        if data['invitation_code'] == '':  # 判断是否输入验证码
+            invitationUser = True
+        else:  # 如果输入了,去用户表找邀请者
+            invitationUser = User.objects.filter(invitation_code=data['invitation_code']).first()
+        if user.integral > int(data['num']) and level and invitationUser:  # 判断用户输入,等级信息,邀请者信息是否正确
+            data['time'] = level.time  # 开通时限
+            data['amount'] = float(level.amount - rule.ratio * int(data['num']))  # 实际花的钱
+            data['order_sn'] = str(uuid.uuid1()).replace('-', '')  # 订单号
+            conn = redis.Redis(connection_pool=POOL)
+            conn.hset('memberOrder' + data['order_sn'], data['order_sn'], json.dumps(data))
+            conn.expire('memberOrder' + data['order_sn'], 600)  # 设置过期
+            ret['order_sn'] = data['order_sn']
+            ret['code'] = 200
+            ret['message'] = '成功'
+            print(conn.hgetall('memberOrder' + str(user.id)))
+        else:  # 用户输入的信息有误
+            ret['code'] = 1000
+            ret['message'] = '失败'
         return Response(ret)

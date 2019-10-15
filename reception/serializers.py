@@ -43,7 +43,7 @@ class UserSerializersModel(serializers.ModelSerializer):
             return member.data
         except Exception as e:
 
-            return str(e)
+            return {}
 
     class Meta:
         model = User

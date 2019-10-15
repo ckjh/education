@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 from django.contrib.auth.models import AbstractUser
-
+import django.utils.timezone as timezone
 
 # # Create your models here.
 class Base(models.Model):
@@ -35,8 +35,8 @@ class User(Base, AbstractUser):
 class Member(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     level = models.ForeignKey(UserLevel, on_delete=models.CASCADE)
-    start_time = models.DateTimeField(auto_now_add=True)
-    end_time = models.DateTimeField(auto_now=False)
+    start_time = models.DateTimeField(default=timezone.now())
+    end_time = models.DateTimeField(default=timezone.now())
 
     class Meta():
         db_table = 'member'
@@ -387,7 +387,7 @@ class Rule(Base):
         db_table = 'rule'
 
 
-import django.utils.timezone as timezone
+
 
 
 # 优惠券表
