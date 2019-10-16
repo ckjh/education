@@ -32,6 +32,7 @@ def get_ali_object():
     )
     return alipay
 
+
 def get_ali_course_object():
     # 沙箱环境地址：https://openhome.alipay.com/platform/appDaily.htm?tab=info
     app_id = "2016101300676523"  # APPID （沙箱应用）
@@ -75,6 +76,7 @@ def page1(request):
                 subject="test",  # 商品简单描述
                 out_trade_no=order['order_sn'],  # 用户购买的商品订单号（每次不一样） 20180301073422891
                 total_amount=money,  # 交易金额(单位: 元 保留俩位小数)
+                timeout_express='1m'
             )
             pay_url = "https://openapi.alipaydev.com/gateway.do?{0}".format(query_params)  # 支付宝网关地址（沙箱应用）
             mes['code'] = 200
@@ -90,6 +92,7 @@ def page1(request):
                 subject="test",  # 商品简单描述
                 out_trade_no=order['order_number'],  # 用户购买的商品订单号（每次不一样） 20180301073422891
                 total_amount=money,  # 交易金额(单位: 元 保留俩位小数)
+                timeout_express='1m'
 
             )
             pay_url = "https://openapi.alipaydev.com/gateway.do?{0}".format(query_params)  # 支付宝网关地址（沙箱应用）

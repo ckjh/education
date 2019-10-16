@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/education/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/education/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/pay.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/pay.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reception/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -279,7 +279,7 @@
       <workItem from="1571062316954" duration="8036000" />
       <workItem from="1571094286237" duration="32582000" />
       <workItem from="1571148142006" duration="2051000" />
-      <workItem from="1571182566065" duration="34450000" />
+      <workItem from="1571182566065" duration="39336000" />
     </task>
     <servers />
   </component>

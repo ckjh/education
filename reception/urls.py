@@ -33,5 +33,5 @@ urlpatterns = [
     path('mycoupon/', views.MyCoupon.as_view()),  # 我的优惠券
     path('user/', views.UserInfoAPIView.as_view()),  # 用户基本信息
     path('memberOrder/', views.MemberOrderAPIView.as_view()),  # 会员订单
-    path('orderRecord/', views.OrderRecordAPIView.as_view())
+    path('courseOrder/', views.OrderRecordAPIView.as_view())
 ]

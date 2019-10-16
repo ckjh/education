@@ -386,7 +386,7 @@ class MyCoupon(APIView):
         data['money'] = coupon.money
         data['type'] = coupon.type
         data['condition'] = coupon.condition
-        data['is_use'] = coupon.status
+        data['is_use'] = 0
         data['cid'] = coupon.id
         if coupon.count > 1 and coupon.status == 1:
             if coupon.type == 1 and user:  # 首次开通会员领取
@@ -519,7 +519,7 @@ class MemberOrderAPIView(APIView):
             if invitationUser.id != user.id:
                 invitationUser = False
         # 判断用户输入,等级信息,邀请者信息是否正确
-        if user.integral > int(data['num']) and level and invitationUser and float(
+        if user.integral >= int(data['num']) and level and invitationUser and float(
                 level.amount - rule.ratio * int(data['num'])) > 0:
             # float(level.amount - rule.ratio * int(data['num'])) > 0,积分用的太多导致价格成了负数
             # user.integral > int(data['num']) 判断用户使用的积分是否比自己拥有的多,防止花超了
@@ -616,6 +616,10 @@ class OrderRecordAPIView(APIView):
                 idList = [0, course.id]  # 如果不是制定课程的id 或是 未指定课程均为优惠券误用
                 c = Coupon.objects.filter(id=coupon.cid).first()
                 if coupon.condition > price or c.course not in idList or coupon.is_use == 1:
+                    print('=============================')
+                    print(coupon.condition, price)
+                    print(c.course, idList)
+                    print(coupon.is_use == 1)
                     ret['code'] = 601
                     ret['message'] = '优惠券信息错误'
                     return Response(ret)
@@ -628,7 +632,7 @@ class OrderRecordAPIView(APIView):
                 data['coupon'] = ''
                 if price < int(rule.ratio * data['num']) or user.integral < int(data['num']):
                     ret['code'] = 601
-                    ret['message'] = '优惠信息错误'
+                    ret['message'] = '积分信息错误'
                     return Response(ret)
                 data['preferential_money'] = rule.ratio * data['num']
                 data['pay_price'] = price - rule.ratio * data['num']
@@ -638,6 +642,7 @@ class OrderRecordAPIView(APIView):
                 return Response(ret)
                 # 订单号
             data['order_number'] = str(uuid.uuid1()).replace('-', '')
+            ret['courseOrder_sn'] = data['order_number']
             ret['code'] = 200
             ret['message'] = '成功'
             print(data)
@@ -652,4 +657,15 @@ class OrderRecordAPIView(APIView):
             ret['order_number'] = data['order_number']
             ret['message'] = "订单信息错误"
 
+        return Response(ret)
+
+
+class DidYouBuyAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        user_id = request.GET.get('user_id')
+        course_id=request.GET.get('course_id')
+        
+        ret['code'] = 200
+        ret['message'] = '成功'
         return Response(ret)
