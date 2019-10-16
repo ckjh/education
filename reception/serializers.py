@@ -19,6 +19,7 @@ class UserCouponSerializer(serializers.Serializer):
     money = serializers.DecimalField(max_digits=7, decimal_places=2)
     condition = serializers.DecimalField(max_digits=7, decimal_places=2)  # 满减
     is_use = serializers.IntegerField()  # 0未使用，1使用
+    cid = serializers.IntegerField(default=0, allow_null=True)
 
     def create(self, data):
         usercoupon = Usercoupon.objects.create(**data)
@@ -81,4 +82,28 @@ class MemberOrderSerializer(serializers.Serializer):
 
     def create(self, data):
         m = MemberOrder.objects.create(**data)
+        return m
+
+
+class CourseOrderSerializer(serializers.Serializer):
+    order_number = serializers.CharField(max_length=100)
+    course_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
+    preferential_way = serializers.IntegerField()
+    pay_price = serializers.DecimalField(max_digits=7, decimal_places=2)  # 支付金额
+    price = serializers.DecimalField(max_digits=7, decimal_places=2)  # 支付金额
+    preferential_money = serializers.DecimalField(max_digits=7, decimal_places=2)  # 支付金额
+    pay_type = serializers.IntegerField()  # 支付方式
+    coupon = serializers.CharField(default='', allow_blank=True)  # 邀请码
+    code = serializers.CharField(max_length=100)
+    order_status = serializers.IntegerField()
+    num = serializers.IntegerField(default=0)
+
+    class Meta:
+        db_table = OrderRecord
+
+    def create(self, data):
+        data['user_id'] = User.objects.get(id=data['user_id'])
+        data['course_id'] = Course.objects.get(id=data['course_id'])
+        m = OrderRecord.objects.create(**data)
         return m

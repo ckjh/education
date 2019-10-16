@@ -409,6 +409,7 @@ class MyCoupon(APIView):
                     mes['code'] = 10010
                     mes['message'] = '领取失败'
             elif coupon.type == 3:
+                data['cid'] = coupon.id
                 u = UserCouponSerializer(data=data)
                 if u.is_valid():
                     u.save()
@@ -470,13 +471,10 @@ class MemberOrderAPIView(APIView):
         # 更新积分:首先用户是否使用积分要判断
         if o.is_valid():
             o.save()
-            if int(order['num']) > 0:
-                # 如果使用了,那减去相应积分
-                user = User.objects.get(id=int(order['user_id']))
-                user.integral -= int(order['num'])
-                user.level_id = int(order['level_id'])
-                user.save()
-                # 判断用户是否使用邀请码
+            user = User.objects.get(id=int(order['user_id']))
+            user.level_id = int(order['level_id'])
+            user.save()
+            # 判断用户是否使用邀请码
             if order['invitation_code'] != '':
                 # 为邀请者加积分,通过邀请码找到邀请者
                 invitationUser = User.objects.filter(invitation_code=order['invitation_code']).first()
@@ -491,6 +489,8 @@ class MemberOrderAPIView(APIView):
             ret['code'] = 200
             ret['message'] = '成功'
         else:
+            user = User.objects.get(id=int(order['user_id']))
+            user.integral += int(order['num'])
             print(o.errors)
             ret['code'] = 1000
             ret['message'] = '失败'
@@ -535,6 +535,11 @@ class MemberOrderAPIView(APIView):
             conn = redis.Redis(connection_pool=POOL)
             conn.hset('memberOrder' + data['order_sn'], data['order_sn'], json.dumps(data))
             conn.expire('memberOrder' + data['order_sn'], 600)  # 设置过期时间未600秒,就是 600秒内不支付 订单消失
+            if int(data['num']) > 0:
+                # 如果使用了,那减去相应积分
+                user.integral -= int(data['num'])
+                user.save()
+                # 判断用户是否使用邀请码
             ret['order_sn'] = data['order_sn']  # 将订单号作为响应内容传回页面，根据该订单号以获取支付页面的url，逻辑在pay.py
             ret['code'] = 200
             ret['message'] = '成功'
@@ -561,17 +566,85 @@ class MemberOrderAPIView(APIView):
 class OrderRecordAPIView(APIView):
     def get(self, request):
         ret = {}
-        ret['code'] = 200
-        ret['message'] = '成功'
+        order_sn = request.GET.get('out_trade_no')  # 订单号
+        trade_no = request.GET.get('trade_no')  # 流水号
+        print(trade_no)
+        # 将存在redis中的订单使用订单号读出
+        conn = redis.Redis(connection_pool=POOL)
+        order = conn.hget('courseOrder' + str(order_sn), str(order_sn))
+        order = json.loads(order).copy()
+        # 完善订单信息存入memberOrder表
+        order['code'] = trade_no
+        order['order_status'] = 1  # 将订单状态改为 已支付
+        order['user_id']=order['uid']
+        order['course_id']=order['cid']
+        o = CourseOrderSerializer(data=order)
+        if o.is_valid():
+            o.save()
+            ret['code'] = 200
+            ret['message'] = '成功'
+        else:
+            user = User.objects.get(id=int(order['uid']))
+            user.integral += int(order['num'])
+            print(o.errors)
+            ret['code'] = 1000
+            ret['message'] = '失败'
         return Response(ret)
 
     def post(self, request):
         ret = {}
         data = request.data.copy()
+        print(data)
         user = User.objects.get(id=data['uid'])  # 用户
         course = Course.objects.get(id=data['cid'])  # 课程
-        # if preferential_way
+        coupon = Usercoupon.objects.filter(code=data['coupon']).first()
+        rule = Rule.objects.first()
+        print(course, user, coupon)
+        if user and course and int(data['preferential_way']) in [0, 1, 3]:
+            price = Price.objects.filter(type=user.level_id).first().discoun_price  # 课程原价
+            data['price'] = price
+            # 未选优惠方式
+            if int(data['preferential_way']) == 0:
+                data['coupon'], data['num'], data['preferential_money'] = '', 0, 0
+                data['pay_price'] = price
+            # 选择用优惠券
+            elif int(data['preferential_way']) == 1:
+                data['num'] = 0
+                idList = [0, course.id]  # 如果不是制定课程的id 或是 未指定课程均为优惠券误用
+                c = Coupon.objects.filter(id=coupon.cid).first()
+                if coupon.condition > price or c.course not in idList:
+                    ret['code'] = 601
+                    ret['message'] = '优惠信息错误'
+                    return Response(ret)
+                data['pay_price'] = price - coupon.money
+                data['preferential_money'] = coupon.money
+            # 选择用积分
+            elif int(data['preferential_way']) == 2:
+                data['coupon'] = ''
+                if price < int(rule.ratio * data['num']) or user.integral < int(data['num']):
+                    ret['code'] = 601
+                    ret['message'] = '优惠信息错误'
+                    return Response(ret)
+                data['preferential_money'] = rule.ratio * data['num']
+                data['pay_price'] = price - rule.ratio * data['num']
+            else:
+                ret['code'] = 601
+                ret['message'] = '优惠方式错误'
+                return Response(ret)
+                # 订单号
+            data['order_number'] = str(uuid.uuid1()).replace('-', '')
+            ret['code'] = 200
+            ret['message'] = '成功'
+            print(data)
+            data['price'] = float(data['price'])
+            data['preferential_money'] = float(data['preferential_money'])
+            data['pay_price'] = float(data['pay_price'])
+            conn = redis.Redis(connection_pool=POOL)
+            conn.hset('courseOrder' + data['order_number'], data['order_number'], json.dumps(data))
+            conn.expire('courseOrder' + data['order_number'], 600)  # 设置过期时间未600秒,就是 600秒内不支付 订单消失
+        else:
+            ret['code'] = 1000
+            ret['order_number'] = data['order_number']
+            ret['message'] = "订单信息错误"
 
-        ret['code'] = 200
-        ret['message'] = '成功'
         return Response(ret)

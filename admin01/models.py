@@ -349,8 +349,8 @@ class Collect(Base):
 # 订单记录表
 class OrderRecord(Base):
     order_number = models.CharField(max_length=100)
-    uid = models.ForeignKey('User', on_delete=models.CASCADE, verbose_name='关联用户id')
-    cid = models.ForeignKey('Course', on_delete=models.CASCADE, verbose_name='关联课程id')
+    user_id = models.ForeignKey('User', on_delete=models.CASCADE, verbose_name='关联用户id')
+    course_id = models.ForeignKey('Course', on_delete=models.CASCADE, verbose_name='关联课程id')
     pay_type = models.IntegerField(default=0, verbose_name='支付方式01')
     price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='支付价格')
     pay_price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='价实际格')
