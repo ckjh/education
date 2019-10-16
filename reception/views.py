@@ -472,6 +472,7 @@ class MemberOrderAPIView(APIView):
                 # 如果使用了,那减去相应积分
                 user = User.objects.get(id=int(order['user_id']))
                 user.integral -= int(order['num'])
+                user.level_id = int(order['level_id'])
                 user.save()
                 # 判断用户是否使用邀请码
             if order['invitation_code'] != '':

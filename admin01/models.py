@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 import django.utils.timezone as timezone
 
+
 # # Create your models here.
 class Base(models.Model):
     create_time = models.DateField(auto_now_add=True)
@@ -13,7 +14,7 @@ class Base(models.Model):
 
 
 class UserLevel(models.Model):
-    level = models.CharField(max_length=50)
+    level = models.CharField(max_length=50)  # 用户等级
 
     class Meta():
         db_table = 'userlevel'
@@ -22,21 +23,22 @@ class UserLevel(models.Model):
 class User(Base, AbstractUser):
     email = models.CharField(max_length=50)
     password = models.CharField(max_length=255)
-    img = models.CharField(max_length=255, default='')
+    img = models.CharField(max_length=255, default='')  # 用户头像
     username = models.CharField(max_length=50, unique=True)
-    level = models.ForeignKey(UserLevel, on_delete=models.SET_NULL, blank=True, null=True)
-    integral = models.IntegerField(default=0)
-    invitation_code = models.CharField(max_length=100)
+    level = models.ForeignKey(UserLevel, on_delete=models.SET_NULL, blank=True, null=True)  # 用户等级
+    integral = models.IntegerField(default=0)  # 积分
+    invitation_code = models.CharField(max_length=100)  # 邀请码
 
     class Meta():
         db_table = 'user'
 
 
+# 维护会员状态
 class Member(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     level = models.ForeignKey(UserLevel, on_delete=models.CASCADE)
-    start_time = models.DateTimeField(default=timezone.now())
-    end_time = models.DateTimeField(default=timezone.now())
+    start_time = models.DateTimeField(default=timezone.now())  # 会员生效时间
+    end_time = models.DateTimeField(default=timezone.now())  # 会员失效时间
 
     class Meta():
         db_table = 'member'
@@ -45,36 +47,38 @@ class Member(Base):
 class MemberOrder(Base):
     order_sn = models.CharField(max_length=100)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    level = models.ForeignKey(UserLevel, on_delete=models.CASCADE)
-    time = models.IntegerField(default=1)
+    level = models.ForeignKey(UserLevel, on_delete=models.CASCADE)  # 开通的会员类型
+    time = models.IntegerField(default=1)  # 开通时长
     code = models.CharField(max_length=100)  # 流水号
-    status = models.IntegerField(default=0)
+    status = models.IntegerField(default=0)  # 支付状态
     amount = models.DecimalField(max_digits=7, decimal_places=2)  # 总价
-    pay_type = models.IntegerField()
-    invitation_code = models.CharField(max_length=100, default='')
+    pay_type = models.IntegerField()  # 支付方式
+    invitation_code = models.CharField(max_length=100, default='')  # 使用的邀请码
 
     class Meta():
         db_table = 'memberorder'
 
 
 class UserLevelCondition(models.Model):
-    level = models.ForeignKey(UserLevel, on_delete=models.CASCADE)
-    time = models.IntegerField(default=1)
+    level = models.ForeignKey(UserLevel, on_delete=models.CASCADE)  # 开通的会员类型
+    time = models.IntegerField(default=1)  # 开通时长
     amount = models.DecimalField(max_digits=7, decimal_places=2)  # 总价
 
     class Meta():
         db_table = 'userlevelcondition'
 
 
+# 三方账号表
 class ThirdPartyLogin(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    type = models.IntegerField()
-    uid = models.CharField(max_length=50)
+    type = models.IntegerField()  # 三方平台类型
+    uid = models.CharField(max_length=50)  # 三方平台账号唯一的UID
 
     class Meta():
         db_table = 'thirdpartylogin'
 
 
+# 站内信
 class SiteMessage(Base):
     title = models.CharField(max_length=50)
     content = models.TextField()
@@ -83,6 +87,7 @@ class SiteMessage(Base):
         db_table = 'sitemessage'
 
 
+# 我的站内信
 class UserSiteMessage(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     type = models.IntegerField(default=0)
@@ -93,6 +98,7 @@ class UserSiteMessage(Base):
         db_table = 'usersitemessage'
 
 
+# 路径表
 class Path(models.Model):
     name = models.CharField(max_length=50)
     pic = models.CharField(max_length=255)
@@ -387,9 +393,6 @@ class Rule(Base):
         db_table = 'rule'
 
 
-
-
-
 # 优惠券表
 class Coupon(Base):
     name = models.CharField(max_length=15, verbose_name='优惠券名称')
@@ -456,4 +459,3 @@ class Data(Base):
     result = models.IntegerField(default=1)
     reason = models.CharField(max_length=250)
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE)
-

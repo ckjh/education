@@ -25,12 +25,12 @@ urlpatterns = [
     path('getimagecode/', views.GetImageCode),  # 获取验证码图片
     path('forgetpwd/', views.ForGetPwd.as_view()),  # 忘记密码接口
     path('thirdLog/', views.ThirdPartAPIView.as_view()),  # 三方登录接口
-    path('showCourse/', views.ShowCoursesAPIView.as_view()),
-    path('path/', views.PathDetailAPIView.as_view()),
-    path('webssh/', views.webssh),
-    path('pay/', pay.page1),
-    path('mypath/', views.MyPath.as_view()),
-    path('mycoupon/', views.MyCoupon.as_view()),
-    path('user/', views.UserInfoAPIView.as_view()),
-    path('memberOrder/', views.MemberOrderAPIView.as_view())
+    path('showCourse/', views.ShowCoursesAPIView.as_view()),  # 首页展示课程
+    path('path/', views.PathDetailAPIView.as_view()),  # 获取路径详情页数据
+    path('webssh/', views.webssh),  # terminal
+    path('pay/', pay.page1),  # 获取会员支付页面的url
+    path('mypath/', views.MyPath.as_view()),  # 我的路径
+    path('mycoupon/', views.MyCoupon.as_view()),  # 我的优惠券
+    path('user/', views.UserInfoAPIView.as_view()),  # 用户基本信息
+    path('memberOrder/', views.MemberOrderAPIView.as_view())  # 会员订单
 ]
