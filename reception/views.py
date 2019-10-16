@@ -519,7 +519,9 @@ class MemberOrderAPIView(APIView):
             if invitationUser.id != user.id:
                 invitationUser = False
         # 判断用户输入,等级信息,邀请者信息是否正确
-        if user.integral > int(data['num']) and level and invitationUser:
+        if user.integral > int(data['num']) and level and invitationUser and float(
+                level.amount - rule.ratio * int(data['num'])) > 0:
+            # float(level.amount - rule.ratio * int(data['num'])) > 0,积分用的太多导致价格成了负数
             # user.integral > int(data['num']) 判断用户使用的积分是否比自己拥有的多,防止花超了
             # level 判断用户等级是否存在
             # invitationUser判断用户输入的邀请码是否有对应的邀请者
@@ -554,3 +556,22 @@ class MemberOrderAPIView(APIView):
             mes['code'] = 10010
             mes['message'] = '失败'
         return Response(mes)
+
+
+class OrderRecordAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+    def post(self, request):
+        ret = {}
+        data = request.data.copy()
+        user = User.objects.get(id=data['uid'])  # 用户
+        course = Course.objects.get(id=data['cid'])  # 课程
+        # if preferential_way
+
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)

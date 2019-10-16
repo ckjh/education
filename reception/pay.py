@@ -33,15 +33,6 @@ def get_ali_object():
     return alipay
 
 
-# def PaGe(request,id):
-#     if request.method == "GET":
-#         Order.objects.filter(id=id).update(status='已支付')
-#         return redirect('http://127.0.0.1:8080/user_center_order.html')
-
-
-from admin01.models import MemberOrder, OrderRecord
-
-
 def page1(request):
     if request.method == "GET":
         # 这个在订单生成成功后，用来获取支付页url，并设置支付页内容

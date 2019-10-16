@@ -351,11 +351,9 @@ class OrderRecord(Base):
     order_number = models.CharField(max_length=100)
     uid = models.ForeignKey('User', on_delete=models.CASCADE, verbose_name='关联用户id')
     cid = models.ForeignKey('Course', on_delete=models.CASCADE, verbose_name='关联课程id')
-
     pay_type = models.IntegerField(default=0, verbose_name='支付方式01')
     price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='支付价格')
     pay_price = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='价实际格')
-
     preferential_way = models.IntegerField(default=0, verbose_name='优惠方式，0未使用优惠，1使用积分，2使用优惠券')
     preferential_money = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='优惠金额')
     use_type = models.IntegerField(default=0, verbose_name='是否使用优惠券')
@@ -363,6 +361,7 @@ class OrderRecord(Base):
     code = models.CharField(max_length=100, verbose_name='流水号')
     coupon = models.CharField(max_length=100, verbose_name='如果使用优惠券则填优惠券的码，不使用则为空')
     pay_status = models.IntegerField(default=0, verbose_name='支付状态')
+    num = models.IntegerField(default=0, verbose_name='消耗积分')
 
     class Meta():
         db_table = 'orderrecord'
@@ -387,7 +386,9 @@ class OrderRecord(Base):
 
 # 积分兑换规则
 class Rule(Base):
-    ratio = models.IntegerField()
+    ratio = models.IntegerField()  # 积分抵现比例
+    invite_award = models.IntegerField(default=10)  # 邀请奖励
+    learn_award = models.IntegerField(default=10)  # 课程学习奖励
 
     class Meta:
         db_table = 'rule'
@@ -404,6 +405,7 @@ class Coupon(Base):
     status = models.IntegerField(verbose_name='使用状态')  # 1可用，2不可用
     condition = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='满多少钱可以使用')
     money = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='优惠券金额')
+    value = models.IntegerField(default=0)  # 换优惠券需要多少积分
 
     class Meta:
         db_table = 'coupon'
@@ -419,6 +421,7 @@ class Usercoupon(Base):
     money = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='优惠券金额')
     condition = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='满多少钱可以使用')
     is_use = models.IntegerField(verbose_name='是否使用')  # 0未使用，1使用
+    cid = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'usercoupon'
