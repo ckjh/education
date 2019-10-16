@@ -19,7 +19,6 @@ class UserCouponSerializer(serializers.Serializer):
     condition = serializers.DecimalField(max_digits=7, decimal_places=2)
     is_use = serializers.IntegerField()  # 0未使用，1使用
 
-
     def create(self, data):
         usercoupon = Usercoupon.objects.create(**data)
         return usercoupon
@@ -47,6 +46,14 @@ class UserSerializersModel(serializers.ModelSerializer):
 
     class Meta:
         model = User
+        fields = '__all__'
+
+
+class MemberOrderSerializersModel(serializers.ModelSerializer):
+    level_name = serializers.CharField(source='level.level')
+
+    class Meta:
+        model = MemberOrder
         fields = '__all__'
 
 

@@ -175,3 +175,5 @@ CELERY_RESULT_BACKEND = 'amqp://hnq:123456@116.62.155.103:5672/myvhost'
 APP_KEY = '3345882312'
 APP_SECRET = 'f73a866a48b58b0f275111109c265748'
 CALLBACK_URL = 'http://127.0.0.1:8080/weibo_callback/'
+MemberPayCallBack = "http://127.0.0.1:8000/memberOrder/"
+UserCenterUrl = 'http://localhost:8080/userCenter'

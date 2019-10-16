@@ -453,39 +453,48 @@ class UserInfoAPIView(APIView):
 
 class MemberOrderAPIView(APIView):
     def get(self, request):
-        order_sn = request.GET.get('out_trade_no')
-        trade_no = request.GET.get('trade_no')
+        # 支付成功立即自动回调这个借口,会传回几个参数,其中我们取出订单号,流水号
+        order_sn = request.GET.get('out_trade_no')  # 订单号
+        trade_no = request.GET.get('trade_no')  # 流水号
+        # 将存在redis中的订单使用订单号读出
         ret = {}
         conn = redis.Redis(connection_pool=POOL)
         order = conn.hget('memberOrder' + str(order_sn), str(order_sn))
         order = json.loads(order)
+        # 完善订单信息存入memberOrder表
         order['code'] = trade_no
+        order['status'] = 1  # 将订单状态改为 已支付
         o = MemberOrderSerializer(data=order)
-        # 更新积分
-        if int(order['num']) > 0:
-            user = User.objects.get(id=int(order['user_id']))
-            user.integral -= int(order['num'])
-            user.save()
-        if order['invitation_code'] != '':
-            # 为邀请者加积分,通过邀请码找到邀请者
-            invitationUser = User.objects.filter(invitation_code=order['invitation_code']).first()
-            invitationUser.integral += 100
-            invitationUser.save()
-        d1 = datetime.datetime.now()
-        # 计算过期时间
-        d3 = d1 + datetime.timedelta(days=31 * int(order['time']))
-        # 向维护会员过期时间的表中添加数据
-        Member.objects.create(user_id=int(order['user_id']), level_id=int(order['level_id']), start_time=d1,
-                              end_time=d3)
+        # 更新积分:首先用户是否使用积分要判断
         if o.is_valid():
             o.save()
+            if int(order['num']) > 0:
+                # 如果使用了,那减去相应积分
+                user = User.objects.get(id=int(order['user_id']))
+                user.integral -= int(order['num'])
+                user.save()
+                # 判断用户是否使用邀请码
+            if order['invitation_code'] != '':
+                # 为邀请者加积分,通过邀请码找到邀请者
+                invitationUser = User.objects.filter(invitation_code=order['invitation_code']).first()
+                invitationUser.integral += 100
+                invitationUser.save()
+            d1 = datetime.datetime.now()
+            # 计算过期时间
+            d3 = d1 + datetime.timedelta(days=31 * int(order['time']))
+            # 向维护会员过期时间的表中添加数据
+            Member.objects.create(user_id=int(order['user_id']), level_id=int(order['level_id']), start_time=d1,
+                                  end_time=d3)
+            ret['code'] = 200
+            ret['message'] = '成功'
         else:
             print(o.errors)
-        ret['code'] = 200
-        ret['message'] = '成功'
-        return redirect('http://localhost:8080/userCenter')
+            ret['code'] = 1000
+            ret['message'] = '失败'
+        return redirect(settings.UserCenterUrl)
 
     def post(self, request):
+        # 在支付前生成会员订单时调用
         ret = {}
         data = request.data.copy()
         # 验证获取的数据
@@ -493,26 +502,50 @@ class MemberOrderAPIView(APIView):
         user = User.objects.get(id=data['user_id'])  # 获取用户信息
         rule = Rule.objects.first()  # 获取抵扣比例
         member = Member.objects.filter(user_id=int(data['user_id']))
+        # 判断用户是否为会员,如果已经开通那就返回失败
         if member:
             ret['code'] = 1000
             ret['message'] = '您已成为会员'
             return Response(ret)
-        if data['invitation_code'] == '':  # 判断是否输入验证码
+        # 判断用户是否输入邀请码
+        if data['invitation_code'] == '':
             invitationUser = True
+            # 定义为True以通过下面的判断
         else:  # 如果输入了,去用户表找邀请者
             invitationUser = User.objects.filter(invitation_code=data['invitation_code']).first()
-        if user.integral > int(data['num']) and level and invitationUser:  # 判断用户输入,等级信息,邀请者信息是否正确
-            data['time'] = level.time  # 开通时限
+        # 判断用户输入,等级信息,邀请者信息是否正确
+        if user.integral > int(data['num']) and level and invitationUser and invitationUser.id != user.id:
+            # user.integral > int(data['num']) 判断用户使用的积分是否比自己拥有的多,防止花超了
+            # level 判断用户等级是否存在
+            # invitationUser判断用户输入的邀请码是否有对应的邀请者
+            # invitationUser.id != user.id 判断用户是否在用自己的邀请码开会员，这是典型的刷分操作
+            # 以上任何一种错误都不能存现
+            data['time'] = level.time  # 通过用户等级条件表获取开通时限
             data['amount'] = float(level.amount - rule.ratio * int(data['num']))  # 实际花的钱
+            # 实际花费 = 原价 - 抵扣比例 * 积分
             data['order_sn'] = str(uuid.uuid1()).replace('-', '')  # 订单号
+            # 将订单信息存入redis
             conn = redis.Redis(connection_pool=POOL)
             conn.hset('memberOrder' + data['order_sn'], data['order_sn'], json.dumps(data))
-            conn.expire('memberOrder' + data['order_sn'], 600)  # 设置过期
-            ret['order_sn'] = data['order_sn']
+            conn.expire('memberOrder' + data['order_sn'], 600)  # 设置过期时间未600秒,就是 600秒内不支付 订单消失
+            ret['order_sn'] = data['order_sn']  # 将订单号作为响应内容传回页面，根据该订单号以获取支付页面的url，逻辑在pay.py
             ret['code'] = 200
             ret['message'] = '成功'
-            print(conn.hgetall('memberOrder' + str(user.id)))
         else:  # 用户输入的信息有误
             ret['code'] = 1000
             ret['message'] = '失败'
         return Response(ret)
+
+    def put(self, request):
+        mes = {}
+        try:
+            data = request.data.copy()
+            c1 = MemberOrder.objects.filter(user_id=data['user_id']).all()
+            ser = MemberOrderSerializersModel(c1, many=True)
+            mes['dataList'] = ser.data
+            mes['code'] = 200
+            mes['msg'] = 'ok'
+        except:
+            mes['code'] = 10010
+            mes['message'] = '失败'
+        return Response(mes)

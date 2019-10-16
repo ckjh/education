@@ -3,7 +3,7 @@ import redis
 from django.http import HttpResponse, HttpResponseRedirect
 # 导入类视图
 import json
-
+from education import settings
 from utils.redis_pool import POOL
 from .pay1 import AliPay
 
@@ -15,10 +15,10 @@ def get_ali_object():
 
     # 支付完成后，支付偷偷向这里地址发送一个post请求，识别公网IP,如果是 192.168.20.13局域网IP ,支付宝找不到，def page2() 接收不到这个请求
     # notify_url = "http://127.0.0.1:8000/md_tast/page1_"
-    notify_url = "http://127.0.0.1:8000/memberOrder/"
+    notify_url = settings.MemberPayCallBack
 
     # 支付完成后，跳转的地址。
-    return_url = "http://127.0.0.1:8000/memberOrder/"
+    return_url = settings.MemberPayCallBack  # 流水号在这里获取  trade_no
     app_private_key_path = "reception/keys/selfkey.txt"  # 应用私钥
     alipay_public_key_path = "reception/keys/public.txt"  # 支付宝公钥
 
@@ -44,46 +44,27 @@ from admin01.models import MemberOrder, OrderRecord
 
 def page1(request):
     if request.method == "GET":
+        # 这个在订单生成成功后，用来获取支付页url，并设置支付页内容
         # 根据当前用户的配置，生成URL，并跳转。
         mes = {}
-        memberOrder_sn = request.GET.get('memberOrder_sn')
-        orderRecord_id = request.GET.get('orderRecord_id')
-        print(memberOrder_sn)
+        memberOrder_sn = request.GET.get('memberOrder_sn')  # 获取订单号
         if memberOrder_sn:
+            # 通过订单号在redis 中查寻 订单信息
             conn = redis.Redis(connection_pool=POOL)
             order = conn.hget('memberOrder' + str(memberOrder_sn), str(memberOrder_sn))
             order = json.loads(order)
-            print(order)
             money = float(order['amount'])
             alipay = get_ali_object()
-
             # 生成支付的url
             query_params = alipay.direct_pay(
                 subject="test",  # 商品简单描述
                 out_trade_no=order['order_sn'],  # 用户购买的商品订单号（每次不一样） 20180301073422891
                 total_amount=money,  # 交易金额(单位: 元 保留俩位小数)
             )
-
             pay_url = "https://openapi.alipaydev.com/gateway.do?{0}".format(query_params)  # 支付宝网关地址（沙箱应用）
-
             mes['code'] = 200
             mes['path'] = pay_url
-
-        elif orderRecord_id:
-            orders = MemberOrder.objects.filter(order_sn=orderRecord_id).first()
-            money = float(orders.amount)
-            alipay = get_ali_object()
-
-            # 生成支付的url
-            query_params = alipay.direct_pay(
-                subject="test",  # 商品简单描述
-                out_trade_no=orders.order_sn,  # 用户购买的商品订单号（每次不一样） 20180301073422891
-                total_amount=money,  # 交易金额(单位: 元 保留俩位小数)
-            )
-
-            pay_url = "https://openapi.alipaydev.com/gateway.do?{0}".format(query_params)  # 支付宝网关地址（沙箱应用）
-            mes = {}
-            mes['code'] = 200
-            mes['path'] = pay_url
-
+        else:
+            mes['code'] = 1000
+            mes['message'] = '订单失败'
         return HttpResponse(json.dumps(mes))
