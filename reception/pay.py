@@ -60,6 +60,7 @@ def page1(request):
                 subject="test",  # 商品简单描述
                 out_trade_no=order['order_sn'],  # 用户购买的商品订单号（每次不一样） 20180301073422891
                 total_amount=money,  # 交易金额(单位: 元 保留俩位小数)
+
             )
             pay_url = "https://openapi.alipaydev.com/gateway.do?{0}".format(query_params)  # 支付宝网关地址（沙箱应用）
             mes['code'] = 200
