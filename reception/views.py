@@ -378,15 +378,16 @@ class MyCoupon(APIView):
             mes['code'] = 10010
             mes['message'] = '领取失败'
             return Response(mes)
-        data['code'] = code
-        coupon = Coupon.objects.filter(id=coupon_id).first()
         user = Member.objects.get(user_id=user_id)
+        coupon = Coupon.objects.filter(id=coupon_id).first()
+        data['code'] = code
         data['start_time'] = datetime.datetime.now()
         data['end_time'] = datetime.datetime.now()
         data['money'] = coupon.money
         data['type'] = coupon.type
         data['condition'] = coupon.condition
         data['is_use'] = coupon.status
+        data['cid'] = coupon.id
         if coupon.count > 1 and coupon.status == 1:
             if coupon.type == 1 and user:  # 首次开通会员领取
                 u = UserCouponSerializer(data=data)
@@ -409,7 +410,6 @@ class MyCoupon(APIView):
                     mes['code'] = 10010
                     mes['message'] = '领取失败'
             elif coupon.type == 3:
-                data['cid'] = coupon.id
                 u = UserCouponSerializer(data=data)
                 if u.is_valid():
                     u.save()
@@ -576,8 +576,8 @@ class OrderRecordAPIView(APIView):
         # 完善订单信息存入memberOrder表
         order['code'] = trade_no
         order['order_status'] = 1  # 将订单状态改为 已支付
-        order['user_id']=order['uid']
-        order['course_id']=order['cid']
+        order['user_id'] = order['uid']
+        order['course_id'] = order['cid']
         o = CourseOrderSerializer(data=order)
         if o.is_valid():
             o.save()
@@ -587,6 +587,9 @@ class OrderRecordAPIView(APIView):
             user = User.objects.get(id=int(order['uid']))
             user.integral += int(order['num'])
             print(o.errors)
+            myCoupon = Usercoupon.objects.filter(code=order['coupon']).first()
+            myCoupon.is_use = 0
+            myCoupon.save()
             ret['code'] = 1000
             ret['message'] = '失败'
         return Response(ret)
@@ -612,12 +615,14 @@ class OrderRecordAPIView(APIView):
                 data['num'] = 0
                 idList = [0, course.id]  # 如果不是制定课程的id 或是 未指定课程均为优惠券误用
                 c = Coupon.objects.filter(id=coupon.cid).first()
-                if coupon.condition > price or c.course not in idList:
+                if coupon.condition > price or c.course not in idList or coupon.is_use == 1:
                     ret['code'] = 601
-                    ret['message'] = '优惠信息错误'
+                    ret['message'] = '优惠券信息错误'
                     return Response(ret)
                 data['pay_price'] = price - coupon.money
                 data['preferential_money'] = coupon.money
+                coupon.is_use = 1
+                coupon.delete()
             # 选择用积分
             elif int(data['preferential_way']) == 2:
                 data['coupon'] = ''
