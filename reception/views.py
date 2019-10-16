@@ -456,14 +456,16 @@ class MemberOrderAPIView(APIView):
         # 支付成功立即自动回调这个借口,会传回几个参数,其中我们取出订单号,流水号
         order_sn = request.GET.get('out_trade_no')  # 订单号
         trade_no = request.GET.get('trade_no')  # 流水号
+        print(trade_no)
         # 将存在redis中的订单使用订单号读出
         ret = {}
         conn = redis.Redis(connection_pool=POOL)
         order = conn.hget('memberOrder' + str(order_sn), str(order_sn))
-        order = json.loads(order)
+        order = json.loads(order).copy()
         # 完善订单信息存入memberOrder表
         order['code'] = trade_no
         order['status'] = 1  # 将订单状态改为 已支付
+        print(order)
         o = MemberOrderSerializer(data=order)
         # 更新积分:首先用户是否使用积分要判断
         if o.is_valid():
@@ -514,8 +516,10 @@ class MemberOrderAPIView(APIView):
             # 定义为True以通过下面的判断
         else:  # 如果输入了,去用户表找邀请者
             invitationUser = User.objects.filter(invitation_code=data['invitation_code']).first()
+            if invitationUser.id != user.id:
+                invitationUser = False
         # 判断用户输入,等级信息,邀请者信息是否正确
-        if user.integral > int(data['num']) and level and invitationUser and invitationUser.id != user.id:
+        if user.integral > int(data['num']) and level and invitationUser:
             # user.integral > int(data['num']) 判断用户使用的积分是否比自己拥有的多,防止花超了
             # level 判断用户等级是否存在
             # invitationUser判断用户输入的邀请码是否有对应的邀请者

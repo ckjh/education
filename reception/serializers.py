@@ -72,7 +72,9 @@ class MemberOrderSerializer(serializers.Serializer):
     time = serializers.IntegerField()
     amount = serializers.DecimalField(max_digits=7, decimal_places=2)  # 支付金额
     pay_type = serializers.IntegerField()  # 支付方式
-    invitation_code = serializers.CharField(default='')  # 邀请码
+    invitation_code = serializers.CharField(default='', allow_blank=True)  # 邀请码
+    code = serializers.CharField(max_length=100)
+    status = serializers.IntegerField()
 
     class Meta:
         db_table = MemberOrder
