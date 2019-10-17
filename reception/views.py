@@ -380,6 +380,7 @@ class MyCoupon(APIView):
             return Response(mes)
         user = Member.objects.get(user_id=user_id)
         coupon = Coupon.objects.filter(id=coupon_id).first()
+        data['name'] = coupon.name
         data['code'] = code
         data['start_time'] = datetime.datetime.now()
         data['end_time'] = datetime.datetime.now()
@@ -552,6 +553,11 @@ class MemberOrderAPIView(APIView):
         mes = {}
         try:
             data = request.data.copy()
+            searchDict = {}
+            searchDict['user_id'] = data['user_id']
+            c1 = OrderRecord.objects.filter(**searchDict).all()
+            ser = OrderRecordSerializersModel(c1, many=True)
+            mes['courseOrders'] = ser.data
             c1 = MemberOrder.objects.filter(user_id=data['user_id']).all()
             ser = MemberOrderSerializersModel(c1, many=True)
             mes['dataList'] = ser.data
@@ -592,7 +598,7 @@ class OrderRecordAPIView(APIView):
             myCoupon.save()
             ret['code'] = 1000
             ret['message'] = '失败'
-        return Response(ret)
+        return redirect(settings.UserCenterUrl)
 
     def post(self, request):
         ret = {}
@@ -659,13 +665,34 @@ class OrderRecordAPIView(APIView):
 
         return Response(ret)
 
+    def put(self, request):
+        # 向这个借口发请求,若果同时传user_id ,course_id ,会返回订单信息,判断这个列表长度为0,即可判断用户是否购买
+        mes = {}
+        try:
+            data = request.data.copy()
+            course_id = data.get('course_id')
+            searchDict = {}
+            searchDict['user_id'] = data['user_id']
+            if course_id:
+                searchDict['course_id'] = course_id
+            print(searchDict)
+            c1 = OrderRecord.objects.filter(**searchDict).all()
+            ser = OrderRecordSerializersModel(c1, many=True)
+            mes['dataList'] = ser.data
+            mes['code'] = 200
+            mes['msg'] = 'ok'
+        except:
+            mes['code'] = 10010
+            mes['message'] = '失败'
+        return Response(mes)
+
 
 class DidYouBuyAPIView(APIView):
     def get(self, request):
         ret = {}
         user_id = request.GET.get('user_id')
-        course_id=request.GET.get('course_id')
-        
+        course_id = request.GET.get('course_id')
+
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)

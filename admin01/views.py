@@ -710,7 +710,11 @@ class SetPriceAPIView(APIView):
     def get(self, request):  # 展示价格
         ret = {}
         course_id = request.GET.get('course_id')
-        priceList = Price.objects.filter(course_id=course_id)
+        user_id = request.GET.get('user_id')
+        if user_id:
+            priceList = Price.objects.filter(course_id=course_id, user_id=user_id)
+        else:
+            priceList = Price.objects.filter(course_id=course_id)
         priceList = PriceSerializersModel(priceList, many=True)
         ret['dataList'] = priceList.data
         print(ret)
@@ -847,8 +851,8 @@ class CouponView(APIView):
 class RuleAPIView(APIView):
     def get(self, request):
         ret = {}
-        rule=Rule.objects.first()
-        ret['rule']=rule.ratio
+        rule = Rule.objects.first()
+        ret['rule'] = rule.ratio
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)

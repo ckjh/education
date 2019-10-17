@@ -414,6 +414,7 @@ class Coupon(Base):
 # 用户优惠券表
 class Usercoupon(Base):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=15, verbose_name='优惠券名称', default='')
     type = models.IntegerField(verbose_name='优惠券类型', default=0)  # 1首次注册会员送  2全场能用  3指定商品  4指定会员
     code = models.CharField(verbose_name='优惠券唯一编码', default='', max_length=255)
     start_time = models.DateTimeField(verbose_name='优惠券开始时间', default=timezone.now())

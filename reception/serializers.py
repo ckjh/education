@@ -11,6 +11,7 @@ class UserCouponModelSerializer(serializers.ModelSerializer):
 
 # 用户优惠券反序列化类
 class UserCouponSerializer(serializers.Serializer):
+    name = serializers.CharField()
     user_id = serializers.IntegerField()
     type = serializers.IntegerField()
     code = serializers.CharField()
@@ -107,3 +108,11 @@ class CourseOrderSerializer(serializers.Serializer):
         data['course_id'] = Course.objects.get(id=data['course_id'])
         m = OrderRecord.objects.create(**data)
         return m
+
+
+class OrderRecordSerializersModel(serializers.ModelSerializer):
+    course_name = serializers.CharField(source='course_id.title')
+
+    class Meta:
+        model = OrderRecord
+        fields = '__all__'
