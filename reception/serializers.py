@@ -21,6 +21,7 @@ class UserCouponSerializer(serializers.Serializer):
     condition = serializers.DecimalField(max_digits=7, decimal_places=2)  # 满减
     is_use = serializers.IntegerField()  # 0未使用，1使用
     cid = serializers.IntegerField(default=0, allow_null=True)
+    course_id = serializers.IntegerField()
 
     def create(self, data):
         usercoupon = Usercoupon.objects.create(**data)

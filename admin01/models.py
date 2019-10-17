@@ -423,6 +423,7 @@ class Usercoupon(Base):
     condition = models.DecimalField(max_digits=7, decimal_places=2, verbose_name='满多少钱可以使用')
     is_use = models.IntegerField(verbose_name='是否使用')  # 0未使用，1使用
     cid = models.IntegerField(default=0)
+    course_id = models.IntegerField(default=0)
 
     class Meta:
         db_table = 'usercoupon'

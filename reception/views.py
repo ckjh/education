@@ -351,9 +351,17 @@ class MyPath(APIView):
 class MyCoupon(APIView):
     def get(self, request):
         user_id = request.GET.get('user_id')
+        course_id = request.GET.get('course_id')
         mes = {}
 
-        if user_id:
+        if user_id and course_id:
+            course_price = Price.objects.filter(course_id=course_id).first().discoun_price
+            u = Usercoupon.objects.filter(user_id=user_id, condition__lte=course_price).all()
+            usercoupon = UserCouponModelSerializer(u, many=True)
+            mes['code'] = 200
+            mes['couponList'] = usercoupon.data
+            mes['message'] = 'ok'
+        elif user_id:
             u = Usercoupon.objects.filter(user_id=user_id).all()
             usercoupon = UserCouponModelSerializer(u, many=True)
             mes['code'] = 200
@@ -389,6 +397,7 @@ class MyCoupon(APIView):
         data['condition'] = coupon.condition
         data['is_use'] = 0
         data['cid'] = coupon.id
+        data['course_id'] = coupon.course
         if coupon.count > 1 and coupon.status == 1:
             if coupon.type == 1 and user:  # 首次开通会员领取
                 u = UserCouponSerializer(data=data)
