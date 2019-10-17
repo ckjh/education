@@ -360,3 +360,28 @@ class CouponSerializer(serializers.Serializer):
         return instance
 
 
+class ActiveSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = Act
+        fields = '__all__'
+
+
+class TimeSerializersModel(serializers.ModelSerializer):
+    class Meta:
+        model = Time
+        fields = '__all__'
+
+
+class SkSerializersModel(serializers.ModelSerializer):
+    course_name = serializers.CharField(source='course.title')
+    act_name = serializers.CharField(source='act.title')
+    start = serializers.CharField(source='time.start')
+    end = serializers.CharField(source='time.end')
+    pic = serializers.CharField(source='course.pic')
+    info = serializers.CharField(source='course.info')
+    section_num = serializers.CharField(source='course.section_num')
+    date = serializers.CharField(source='act.date')
+
+    class Meta:
+        model = Sk
+        fields = '__all__'

@@ -171,6 +171,8 @@ djcelery.setup_loader()
 BROKER_URL = 'amqp://username01:password01@116.62.155.103:5672/myvhost'
 CELERY_IMPORTS = ('reception.task')  # 任务路径
 CELERY_RESULT_BACKEND = 'amqp://hnq:123456@116.62.155.103:5672/myvhost'
+CELERY_TIMEZONE='UTC'
+CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 APP_KEY = '3345882312'
 APP_SECRET = 'f73a866a48b58b0f275111109c265748'

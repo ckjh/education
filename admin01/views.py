@@ -856,3 +856,60 @@ class RuleAPIView(APIView):
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
+
+
+class SKAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        activeList = Act.objects.all()
+        skList = Sk.objects.all()
+        timeList = Time.objects.all()
+        activeList = ActiveSerializersModel(activeList, many=True)
+        skList = SkSerializersModel(skList, many=True)
+        timeList = TimeSerializersModel(timeList, many=True)
+        ret['activeList'] = activeList.data
+        ret['skList'] = skList.data
+        ret['timeList'] = timeList.data
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+    def post(self, request):
+        ret = {}
+        ret['code'] = 200
+        ret['message'] = '成功'
+        data = request.data.copy()
+        if data.get('start') and data.get('end'):
+            data['end'] = data['end'][-13:]
+            data['start'] = data['start'][-13:]
+            print('添加时间')
+            Time.objects.create(**data)
+        elif data.get('title') and data.get('date'):
+            print('添加活动')
+            data['date'] = data['date'][:10]
+            print(data)
+            Act.objects.create(**data)
+        elif data.get('course_id') and data.get('time_id') and data.get('act_id'):
+            print('添加秒杀商品')
+            Sk.objects.create(course_id=data.get('course_id'), time_id=data['time_id'], act_id=data['act_id'],
+                              sk_price=data['sk_price'], count=data['count'])
+        else:
+            ret['code'] = 601
+            ret['message'] = '失败'
+        return Response(ret)
+
+    def delete(self, request):
+        data = request.data.copy()
+        mes = {}
+        mes['code'] = 200
+        mes['msg'] = "删除成功"
+        if data.get('sk_id'):
+            Sk.objects.get(id=data.get('sk_id')).delete()
+        elif data.get('time_id'):
+            Time.objects.get(id=data.get('time_id')).delete()
+        elif data.get('active_id'):
+            Act.objects.get(id=data.get('active_id')).delete()
+        else:
+            mes['code'] = 400
+            mes['msg'] = "删除失败"
+        return Response(mes)

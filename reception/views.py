@@ -696,12 +696,41 @@ class OrderRecordAPIView(APIView):
         return Response(mes)
 
 
-class DidYouBuyAPIView(APIView):
+class SkAPIView(APIView):
     def get(self, request):
         ret = {}
-        user_id = request.GET.get('user_id')
-        course_id = request.GET.get('course_id')
-
+        conn = redis.Redis(connection_pool=POOL)
+        courses = conn.hget('course', str(datetime.datetime.now())[:10])
+        courses = json.loads(courses)
+        ret['courses'] = courses
         ret['code'] = 200
         ret['message'] = '成功'
+        return Response(ret)
+
+    def post(self, request):
+        ret = {}
+        data = request.data
+        # 参数3个:user_id ,course_id,pay_type
+
+        user = User.objects.get(id=data['user_id'])  # 用户
+        conn = redis.Redis(connection_pool=POOL)
+        courses = conn.hget('course', str(datetime.datetime.now())[:10])
+        courses = json.loads(courses)
+        course = {}
+        for item in courses:
+            if courses.course == data['course_id']:
+                course = item
+        # 效验信息: 用户存在,课程在秒杀表,课程数量充足
+        timeNow = time.strftime('%H:%M:%S', time.localtime(time.time()))  # 现在时间
+        # 判断用户, 库存,时间是否在规定范围内
+        if user and int(course['count']) > 0 and str(datetime.datetime.now())[:10] and course['start'] < timeNow < \
+                course['end']:
+            data['num'] = 0
+            data['coupon'] = ''
+            data['order_number'] = str(uuid.uuid1()).replace('-', '')
+            data['preferential_money'] = 0
+            data['preferential_way'] = 0
+            data['pay_price'] = data['price'] = course['sk_price']
+            ret['code'] = 200
+            ret['message'] = '成功'
         return Response(ret)

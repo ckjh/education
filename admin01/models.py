@@ -182,12 +182,10 @@ class Admin(Base):
         db_table = 'admin'
 
 
-# 秒杀产品表
-
 # 秒杀时间表
 class Time(Base):
-    start = models.DateTimeField()
-    end = models.DateTimeField()
+    start = models.TimeField()
+    end = models.TimeField()
 
     class Meta():
         db_table = 'time'
@@ -196,7 +194,7 @@ class Time(Base):
 # 活动表
 class Act(Base):
     title = models.CharField(max_length=40, default='', verbose_name='标题')
-    date = models.DateTimeField(verbose_name='活动时间定为到天')
+    date = models.DateField(verbose_name='活动时间定为到天')
 
     class Meta():
         db_table = 'act'
@@ -206,6 +204,8 @@ class Sk(Base):
     act = models.ForeignKey(Act, on_delete=models.CASCADE, verbose_name='对应活动表')
     time = models.ForeignKey('Time', on_delete=models.CASCADE, verbose_name='对应时间表')
     course = models.ForeignKey('Course', on_delete=models.CASCADE, verbose_name='对应课程表')
+    sk_price = models.DecimalField(max_digits=7, decimal_places=2, default=999.00)
+    count = models.IntegerField(default=0)
 
     class Meta():
         db_table = 'sk'
@@ -288,23 +288,6 @@ class Price(Base):
 
 
 #
-#
-# # #评论p
-# # class Comment(Base):
-# #     content = models.CharField(max_length=50,verbose_name='评论内容')
-# #     pid = models.IntegerField(verbose_name='上一级评论ID')
-# #     top = models.IntegerField(verbose_name='顶级评论ID')
-# #     type =models.IntegerField(verbose_name='自身级别ID')
-# #     user = models.IntegerField(verbose_name='用户ID')
-# #     course = models.IntegerField(verbose_name='课程ID')
-# #     comment_type = models.IntegerField(verbose_name='评论类型')
-# #     # 审核状态（0否1是）
-# #     status = models.IntegerField(default=1)
-# #     reason = models.CharField(max_length=250,verbose_name='失败原因')
-# #
-# #     class Meta():
-# #         db_table = 'comment'
-#
 # 实验报告表
 class Report(Base):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='章节ID')
@@ -317,22 +300,6 @@ class Report(Base):
 
     class Meta():
         db_table = 'report'
-
-
-#
-# # 实验问答
-# class Answer(Base):
-#     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程ID')
-#     answer_content = models.CharField(max_length=50, verbose_name='问答标题')
-#     answer_title = models.CharField(max_length=50, verbose_name='问答内容')
-#     browse = models.IntegerField(verbose_name='浏览量')
-#     user = models.ForeignKey(User, on_delete=models.CASCADE)
-#     pid = models.IntegerField(verbose_name='上一级评论ID')
-#     top = models.IntegerField(verbose_name='顶级评论ID')
-#     type = models.IntegerField(verbose_name='自身级别ID')
-#
-#     class Meta():
-#         db_table = 'answer'
 
 
 # 用户和收藏实验问答报告表
@@ -365,23 +332,6 @@ class OrderRecord(Base):
 
     class Meta():
         db_table = 'orderrecord'
-
-
-#
-# # 讨论区表
-# class Forum(Base):
-#     title = models.CharField(max_length=100, verbose_name='标题')
-#     content = models.CharField(max_length=255, verbose_name='内容')
-#     user = models.ForeignKey('User', on_delete=models.CASCADE, verbose_name='关联用户')
-#     top = models.IntegerField(default=0, verbose_name='顶级id')
-#     revert_num = models.IntegerField(default=0, verbose_name='回复数')
-#     look_num = models.IntegerField(default=0, verbose_name='查看数')
-#     end_revert_num = models.IntegerField(default=0, verbose_name='最后回复的用户id')
-#     type = models.IntegerField(default=0, verbose_name='类型（0交流讨论/1技术分享/2站内公告）')
-#     status = models.IntegerField(default=0, verbose_name='审核状态')
-#
-#     class Meta():
-#         db_table = 'forum'
 
 
 # 积分兑换规则
@@ -464,3 +414,54 @@ class Data(Base):
     result = models.IntegerField(default=1)
     reason = models.CharField(max_length=250)
     admin = models.ForeignKey(Admin, on_delete=models.CASCADE)
+
+#
+# # 实验问答
+# class Answer(Base):
+#     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程ID')
+#     answer_content = models.CharField(max_length=50, verbose_name='问答标题')
+#     answer_title = models.CharField(max_length=50, verbose_name='问答内容')
+#     browse = models.IntegerField(verbose_name='浏览量')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     pid = models.IntegerField(verbose_name='上一级评论ID')
+#     top = models.IntegerField(verbose_name='顶级评论ID')
+#     type = models.IntegerField(verbose_name='自身级别ID')
+#
+#     class Meta():
+#         db_table = 'answer'
+
+
+#
+# # 讨论区表
+# class Forum(Base):
+#     title = models.CharField(max_length=100, verbose_name='标题')
+#     content = models.CharField(max_length=255, verbose_name='内容')
+#     user = models.ForeignKey('User', on_delete=models.CASCADE, verbose_name='关联用户')
+#     top = models.IntegerField(default=0, verbose_name='顶级id')
+#     revert_num = models.IntegerField(default=0, verbose_name='回复数')
+#     look_num = models.IntegerField(default=0, verbose_name='查看数')
+#     end_revert_num = models.IntegerField(default=0, verbose_name='最后回复的用户id')
+#     type = models.IntegerField(default=0, verbose_name='类型（0交流讨论/1技术分享/2站内公告）')
+#     status = models.IntegerField(default=0, verbose_name='审核状态')
+#
+#     class Meta():
+#         db_table = 'forum'
+
+
+#
+#
+# # #评论p
+# # class Comment(Base):
+# #     content = models.CharField(max_length=50,verbose_name='评论内容')
+# #     pid = models.IntegerField(verbose_name='上一级评论ID')
+# #     top = models.IntegerField(verbose_name='顶级评论ID')
+# #     type =models.IntegerField(verbose_name='自身级别ID')
+# #     user = models.IntegerField(verbose_name='用户ID')
+# #     course = models.IntegerField(verbose_name='课程ID')
+# #     comment_type = models.IntegerField(verbose_name='评论类型')
+# #     # 审核状态（0否1是）
+# #     status = models.IntegerField(default=1)
+# #     reason = models.CharField(max_length=250,verbose_name='失败原因')
+# #
+# #     class Meta():
+# #         db_table = 'comment'

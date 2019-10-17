@@ -32,6 +32,7 @@ urlpatterns = [
     path('section/', views.SectionView.as_view()),
     path('backups/', views.BackupsAPIView.as_view()),
     path('coupon/', views.CouponView.as_view()),
-    path('rule/', views.RuleAPIView.as_view())
+    path('rule/', views.RuleAPIView.as_view()),
+    path('sk/', views.SKAPIView.as_view()),
 
 ]
