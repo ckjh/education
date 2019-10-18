@@ -1,4 +1,7 @@
 ﻿import os
+import time
+from datetime import datetime
+
 import paramiko
 from uuid import uuid1
 from django.core.paginator import Paginator
@@ -858,6 +861,9 @@ class RuleAPIView(APIView):
         return Response(ret)
 
 
+from datetime import datetime, timedelta
+
+
 class SKAPIView(APIView):
     def get(self, request):
         ret = {}
@@ -880,13 +886,14 @@ class SKAPIView(APIView):
         ret['message'] = '成功'
         data = request.data.copy()
         if data.get('start') and data.get('end'):
-            data['end'] = data['end'][-13:]
-            data['start'] = data['start'][-13:]
+            data['start'] = datetime.strptime(data['start'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S")+ timedelta(hours=8)
+            data['end'] = datetime.strptime(data['end'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S")+ timedelta(hours=8)
             print('添加时间')
             Time.objects.create(**data)
         elif data.get('title') and data.get('date'):
             print('添加活动')
-            data['date'] = data['date'][:10]
+            data['date'] = datetime.strptime(data['date'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S")+ timedelta(hours=8)
+            data['date']=data['date']
             print(data)
             Act.objects.create(**data)
         elif data.get('course_id') and data.get('time_id') and data.get('act_id'):
