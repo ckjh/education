@@ -709,21 +709,25 @@ class SkAPIView(APIView):
 
     def post(self, request):
         ret = {}
-        data = request.data
+        data = request.data.copy()
         # 参数3个:user_id ,course_id,pay_type
 
         user = User.objects.get(id=data['user_id'])  # 用户
         conn = redis.Redis(connection_pool=POOL)
         courses = conn.hget('course', str(datetime.datetime.now())[:10])
+        print(courses)
         courses = json.loads(courses)
         course = {}
         for item in courses:
-            if courses.course == data['course_id']:
+            print(int(item['course']) == int(data['course_id']))
+            if int(item['course']) == int(data['course_id']):
                 course = item
+        print(course)
         # 效验信息: 用户存在,课程在秒杀表,课程数量充足
         timeNow = time.strftime('%H:%M:%S', time.localtime(time.time()))  # 现在时间
         # 判断用户, 库存,时间是否在规定范围内
-        if user and int(course['count']) > 0 and str(datetime.datetime.now())[:10] and course['start'] < timeNow < \
+        print(course['start'] < timeNow < course['end'])
+        if user and int(course['count']) > 0 and course['start'] < timeNow < \
                 course['end']:
             data['num'] = 0
             data['coupon'] = ''
@@ -731,6 +735,11 @@ class SkAPIView(APIView):
             data['preferential_money'] = 0
             data['preferential_way'] = 0
             data['pay_price'] = data['price'] = course['sk_price']
+            conn.hset('courseOrder' + data['order_number'], data['order_number'], json.dumps(data))
+            conn.expire('courseOrder' + data['order_number'], 600)
+            ret['order_number'] = data['order_number']
             ret['code'] = 200
             ret['message'] = '成功'
         return Response(ret)
+
+

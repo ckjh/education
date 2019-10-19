@@ -1,7 +1,7 @@
 ﻿import os
 import time
 from datetime import datetime
-
+from redisearch import Client, TextField
 import paramiko
 from uuid import uuid1
 from django.core.paginator import Paginator
@@ -886,14 +886,17 @@ class SKAPIView(APIView):
         ret['message'] = '成功'
         data = request.data.copy()
         if data.get('start') and data.get('end'):
-            data['start'] = datetime.strptime(data['start'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S")+ timedelta(hours=8)
-            data['end'] = datetime.strptime(data['end'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S")+ timedelta(hours=8)
+            data['start'] = datetime.strptime(data['start'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S") + timedelta(
+                hours=8)
+            data['end'] = datetime.strptime(data['end'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S") + timedelta(
+                hours=8)
             print('添加时间')
             Time.objects.create(**data)
         elif data.get('title') and data.get('date'):
             print('添加活动')
-            data['date'] = datetime.strptime(data['date'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S")+ timedelta(hours=8)
-            data['date']=data['date']
+            data['date'] = datetime.strptime(data['date'].replace('T', ' ')[:-5], "%Y-%m-%d %H:%M:%S") + timedelta(
+                hours=8)
+            data['date'] = data['date']
             print(data)
             Act.objects.create(**data)
         elif data.get('course_id') and data.get('time_id') and data.get('act_id'):
@@ -919,4 +922,45 @@ class SKAPIView(APIView):
         else:
             mes['code'] = 400
             mes['msg'] = "删除失败"
+        return Response(mes)
+
+
+class RedisSearch(APIView):
+    def get(self, request):
+        # data=request.data
+        mes = {}
+        search_key = request.GET.get('key')
+        print(search_key)
+        all_classes = Course.objects.all()
+        print("开始创建索引——————————————————————————")
+        # 创建一个客户端与给定索引名称
+        client = Client('CII' + str(datetime.now()), host=settings.SIP, port='6666')
+
+        # 创建索引定义和模式
+        client.create_index((TextField('title'), TextField('body')))
+        print('索引创建完毕————————————————————————————————')
+        print('开始添加数据————————————————————————————————')
+
+        for i in all_classes:
+            print(str(i.id) + str(i.title))
+            # 索引文
+            client.add_document('result' + str(datetime.now()), title=i.title + '@' + str(i.id), info=i.info,
+                                language='chinese')
+            print(333333333)
+        print('数据添加完毕————————————————————————————————')
+        print(client.info())
+        # 查找搜索
+        res = client.search(search_key)
+        print('查询结束————————————————————————————————————————————————')
+        id_list = []
+        print(res.docs)
+        for i in res.docs:
+            # print(i.title)  # 取出title，以@切割，取课程ID查询，然后序列化展示
+            id = i.title.split('@')[1]
+            id_list.append(id)
+        course = Course.objects.filter(id__in=id_list).all()
+        c = CourseSerializersModel(course, many=True)
+        mes['course'] = c.data
+        mes['code'] = 200
+        mes['message'] = '搜索完毕'
         return Response(mes)

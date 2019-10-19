@@ -160,7 +160,7 @@ DATABASE_ROUTERS = ['utils.db_router.MasterSlaveRouter']
 
 PIC_URL = 'http://116.62.155.103:8888/'
 # DEFAULT_FILE_STORAGE = 'admin01.storage.FastDFSStorage'
-
+SIP='106.13.222.216'
 IP = '116.62.155.103'
 USER = 'root'  # 用户名
 PASSWORD = 'YTYyty2211'  # 密码
