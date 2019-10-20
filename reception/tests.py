@@ -1,31 +1,32 @@
-# import datetime, json, redis, os, django
-# from utils.redis_pool import POOL
-# from django.utils.timezone import now, timedelta
-#
-# # date = now().date() + timedelta(days=-1) #昨天
-# # date = now().date() + timedelta(days=0) #今天
-# # date = now().date() + timedelta(days=1) #明天
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "education.settings")  # project_name 项目名称
-# django.setup()
-# from admin01.serializer import *
-#
-#
-# def write_into_redis():
-#     conn = redis.Redis(connection_pool=POOL)
-#     # 删掉已经过期的商品(昨天的)
-#     yesterdayList = Sk.objects.filter(act__date=now().date() + timedelta(days=-1))
-#     if yesterdayList:
-#         yesterdayList.delete()
-#         # 查询当天日期内的活动课程
-#     skList = Sk.objects.filter(act__date=now().date() + timedelta(days=0))
-#
-#     # 将当天活动的课程放入redis
-#     if skList:
-#         skList = SkSerializersModel(skList, many=True)
-#         conn.hset('course', str(datetime.datetime.now())[:10], json.dumps(skList.data))
-#         conn.expire('course', 87000)  # 设置过期时间
-#
-#
+import datetime, json, redis, os, django
+from utils.redis_pool import POOL
+from django.utils.timezone import now, timedelta
+
+# date = now().date() + timedelta(days=-1) #昨天
+# date = now().date() + timedelta(days=0) #今天
+# date = now().date() + timedelta(days=1) #明天
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "education.settings")  # project_name 项目名称
+django.setup()
+from admin01.serializer import *
+
+
+def write_into_redis():
+    conn = redis.Redis(connection_pool=POOL)
+    # 删掉已经过期的商品(昨天的)
+    yesterdayList = Sk.objects.filter(act__date=now().date() + timedelta(days=-1))
+    if yesterdayList:
+        pass
+        # yesterdayList.delete()
+        # 查询当天日期内的活动课程
+    skList = Sk.objects.filter(act__date=now().date() + timedelta(days=0))
+
+    # 将当天活动的课程放入redis
+    if skList:
+        skList = SkSerializersModel(skList, many=True)
+        conn.hset('course', str(datetime.datetime.now())[:10], json.dumps(skList.data))
+        conn.expire('course', 87000)  # 设置过期时间
+
+
 # write_into_redis()
 
 """
@@ -38,8 +39,18 @@ from operator import *
 # 例子中的数据相当于是一个用户字典{A:(a,b,d),B:(a,c),C:(b,e),D:(c,d,e)}
 # 我们这样存储原始输入数据
 
-dic = {'A': ('a', 'b', 'd', 'f', 'k'), 'B': ('a', 'c', 'f'), 'C': ('b', 'e', 'k'),
-       'D': ('c', 'd', 'e', 'k'), 'E': {'c', 'k'}}  # 简单粗暴，记得加''
+
+# 构造数据
+
+# userList=User.objects.filter(orderrecord__c)
+dic = dict()
+for user in User.objects.all():
+    if user.orderrecord_set.count() != 0:
+        dic[str(user.id)] = tuple((x.course_id_id for x in user.orderrecord_set.all()))
+
+dic2 = dict()
+for course in Course.objects.all():
+    dic2[str(course.id)] = (course.tag_id, course.path_id, course.teacher_id)
 
 
 # 计算用户兴趣相似度
@@ -75,34 +86,42 @@ def Usersim(dicc):
     return W
 
 
+# 如果用户买过的商品完全一致,相似度为1
 def Recommend(user, dicc, W2, K):
     """
     :param user: 用户
     :param dicc:
-    :param W2: 用户兴趣相似度
+    :param W2: 用户兴趣相似度字典
     :param K: 找到K个相关用户以及对应兴趣相似度，按兴趣相似度从大到小排列
     :return:
     """
     rvi = 1  # 这里都是1,实际中可能每个用户就不一样了。就像每个人都喜欢beautiful girl,但有的喜欢可爱的多一些，有的喜欢御姐多一些。
     rank = dict()
     related_user = []
-    interacted_items = dicc[user]
+    interacted_items = dicc[user]  # 用户买过的课程
+    # 遍历 “用户兴趣相似度字典” 将和指定用户相关的数据放入列表 => 和待推荐用户兴趣相关的所有的用户列表
     for co_user, item in W2.items():
         if co_user[0] == user:
-            related_user.append((co_user[1], item))  # 先建立一个和待推荐用户兴趣相关的所有的用户列表。
-    for v, wuv in sorted(related_user, key=itemgetter(1), reverse=True)[0:K]:
+            related_user.append((co_user[1], item))  # co_user[1]相似用户的id ,item相似用户购买的课程
+    for v, wuv in sorted(related_user, key=itemgetter(1), reverse=True)[0:K]:  # itemgetter(1) 根据元组内下标是1 的对象排序,即相似度
+
+        # K 相似度排前K的用户
         # 找到K个相关用户以及对应兴趣相似度，按兴趣相似度从大到小排列。itemgetter要导包。
         for i in dicc[v]:
-            if i in interacted_items:
-                continue  # 书中少了continue这一步吧？
-            if i not in rank.keys():  # 如果不写要报错，是不是有更好的方法？
+            if i in interacted_items:  # 如果用户买过就不再推荐
+                continue
+            if i not in rank.keys():  # 如果还未推荐，给用户推荐
                 rank[i] = 0
-            rank[i] += wuv * rvi
+            rank[i] += wuv * rvi  # 用户对该课程的用户感兴趣的程度
     return rank
+
+
 
 
 if __name__ == '__main__':
     W3 = Usersim(dic)
     print(W3)
-    Last_Rank = Recommend('B', dic, W3, 2)
+    Last_Rank = Recommend('3', dic, W3, 3)
     print(Last_Rank)
+    d = Usersim(dic2)
+    print(d)
