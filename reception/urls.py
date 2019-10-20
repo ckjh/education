@@ -34,5 +34,6 @@ urlpatterns = [
     path('user/', views.UserInfoAPIView.as_view()),  # 用户基本信息
     path('memberOrder/', views.MemberOrderAPIView.as_view()),  # 会员订单
     path('courseOrder/', views.OrderRecordAPIView.as_view()),
-    path('sk/', views.SkAPIView.as_view())
+    path('sk/', views.SkAPIView.as_view()), #秒杀
+    path ( 'submit/', views.SubmitAddComment.as_view () ),# 添加读取评论
 ]
