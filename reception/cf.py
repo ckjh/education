@@ -1,62 +1,20 @@
-import datetime, json, redis, os, django
-from utils.redis_pool import POOL
-from django.utils.timezone import now, timedelta
+# -*- coding=utf-8 -*-
+import os, django, math
+from operator import *
 
-# date = now().date() + timedelta(days=-1) #昨天
-# date = now().date() + timedelta(days=0) #今天
-# date = now().date() + timedelta(days=1) #明天
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "education.settings")  # project_name 项目名称
 django.setup()
 from admin01.serializer import *
-
-
-def write_into_redis():
-    conn = redis.Redis(connection_pool=POOL)
-    # 删掉已经过期的商品(昨天的)
-    yesterdayList = Sk.objects.filter(act__date=datetime.datetime.now() + timedelta(days=-1))
-    if yesterdayList:
-        pass
-        # yesterdayList.delete()
-        # 查询当天日期内的活动课程
-    skList = Sk.objects.filter(act__date=datetime.datetime.now())
-
-
-
-    # 将当天活动的课程放入redis
-    if skList:
-        for one in skList:
-            one_course = SkSerializersModel(one, many=False)
-            print(one_course)
-            conn.hset('course' + str(datetime.datetime.now())[:10],
-                      (str(one.act_id) + ',' + str(one.time_id) + ',' + str(one.course_id)),
-                      json.dumps(one_course.data))
-        conn.expire('course' + str(datetime.datetime.now())[:10], 87000)  # 设置过期时间
-    else:
-        print('今天没活动')
-
-
-"""
-执行任务
-"""
-# -*- coding=utf-8 -*-
-import math
-from operator import *
 
 # 例子中的数据相当于是一个用户字典{A:(a,b,d),B:(a,c),C:(b,e),D:(c,d,e)}
 # 我们这样存储原始输入数据
 
 
 # 构造数据
-
-# userList=User.objects.filter(orderrecord__c)
 dic = dict()
 for user in User.objects.all():
     if user.orderrecord_set.count() != 0:
         dic[str(user.id)] = tuple((x.course_id_id for x in user.orderrecord_set.all()))
-#
-dic2 = dict()
-for course in Course.objects.all():
-    dic2[str(course.id)] = (course.tag_id, course.path_id, course.teacher_id)
 
 
 # 计算用户兴趣相似度
@@ -110,7 +68,6 @@ def Recommend(user, dicc, W2, K):
         if co_user[0] == user:
             related_user.append((co_user[1], item))  # co_user[1]相似用户的id ,item相似用户购买的课程
     for v, wuv in sorted(related_user, key=itemgetter(1), reverse=True)[0:K]:  # itemgetter(1) 根据元组内下标是1 的对象排序,即相似度
-
         # K 相似度排前K的用户
         # 找到K个相关用户以及对应兴趣相似度，按兴趣相似度从大到小排列。itemgetter要导包。
         for i in dicc[v]:
@@ -123,10 +80,9 @@ def Recommend(user, dicc, W2, K):
 
 
 if __name__ == '__main__':
-    write_into_redis()
-    # W3 = Usersim(dic)
-    # print(W3)
-    # Last_Rank = Recommend('3', dic, W3, 3)
-    # d = Usersim(dic2)
-    # print(Last_Rank.keys())
-    # print(d)
+    print(dic)
+    W3 = Usersim(dic)
+    print(W3)
+    Last_Rank = Recommend('3', dic, W3, 3)
+    print(Last_Rank.keys())
+

@@ -380,7 +380,7 @@ class PathAPIView(APIView):
 
     def get(self, request):  # 展示路径
         ret = {}
-        dataList = Path.objects.all()
+        dataList = Path.objects.all().order_by('-study_num')
         dataList = LightPathSerializersModel(dataList, many=True)
         ret['dataList'] = dataList.data
         limit = request.GET.get('limit')

@@ -261,7 +261,6 @@ class UserCourse(Base):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='章节外键')
     # 完成状态0未完成1完成
     status = models.IntegerField(default=1)
-
     class Meta():
         db_table = 'user_course'
 

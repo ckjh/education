@@ -25,6 +25,11 @@ def sub_comment(course):
             dic['course_id'] = i['course_id']
             dic['status'] = i['status']
             dic['create_time'] = i['create_time']
+            try:
+                dic[ 'back_username' ] = i[ 'username' ]
+            except:
+                dic[ 'back_username' ] = ''
             list.append(dic)
         return list
     return []
+

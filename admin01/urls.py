@@ -34,6 +34,6 @@ urlpatterns = [
     path('coupon/', views.CouponView.as_view()),
     path('rule/', views.RuleAPIView.as_view()),
     path('sk/', views.SKAPIView.as_view()),
-    path('redis_search/', views.RedisSearch.as_view())
+    path('redis_search/', views.RedisSearch.as_view()),
 
 ]

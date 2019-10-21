@@ -2,6 +2,8 @@ import requests
 import uuid
 import json
 import redis
+import math
+from operator import *
 import paramiko
 import re
 import threading
@@ -14,6 +16,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from admin01.serializer import *
 from admin01.serializer import CourseSerializersModel
+from admin01.views import get_pic_url, delete_file
 from utils.redis_pool import POOL
 from reception.task import *
 from utils.captcha.captcha import captcha
@@ -22,7 +25,8 @@ from django.db import transaction
 import hashlib
 from django.core.paginator import Paginator
 from utils.recursive_query import sub_comment
-from utils.mongo_pool import client,getNextValue
+from utils.mongo_pool import client, getNextValue
+
 
 # 验证码 获取文本
 def GetImageCode(request):
@@ -451,6 +455,7 @@ class MyCoupon(APIView):
         return Response(mes)
 
 
+# 用户信息
 class UserInfoAPIView(APIView):
     def get(self, request):
         ret = {}
@@ -459,11 +464,46 @@ class UserInfoAPIView(APIView):
         user = User.objects.get(id=user_id)
         user = UserSerializersModel(user)
         ret['userInfo'] = user.data
+        ret['attentionCourse'] = [x.course_id for x in CourseCollect.objects.filter(user_id=user_id).all()]
+        ret['myCoupon'] = [x.cid for x in Usercoupon.objects.filter(user_id=user_id).all()]
+        ret['cList'] = [x.course_id for x in CourseCollect.objects.filter(user_id=user_id).all()]
+        ret['lList'] = [x.section_id for x in UserCourse.objects.filter(user_id=user_id).all()]
+        ret['tList'] = [x.teacher_id for x in UserTeacher.objects.filter(user_id=user_id).all()]
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
 
+    def put(self, request):
+        mes = {}
+        user_id = request.GET.get('user_id')
+        data = request.data
+        print(data)
+        user = User.objects.get(id=user_id)
+        # 如果用户输了密码
+        # 如果用户在修改头像
+        if data.get('file'):
+            pic = get_pic_url(data['file'])
+            if user.img != "":
+                pass
+                # delete_file(user.img)
+            user.img = pic
+            user.save()
+            mes['code'] = 200
+            mes['message'] = '修改成功'
+        if data.get('password') and data.get('password1'):
+            if 18 > len(data['password1']) > 6 and check_password(user.password, data['password1']):
+                user.password = make_password(data['password'])
+                user.img = data['file']
+                user.save()
+                mes['code'] = 200
+                mes['message'] = '修改成功'
+            else:
+                mes['code'] = 10010
+                mes['message'] = '密码错误'
+        return Response(mes)
 
+
+# 会员订单
 class MemberOrderAPIView(APIView):
     def get(self, request):
         # 支付成功立即自动回调这个借口,会传回几个参数,其中我们取出订单号,流水号
@@ -580,6 +620,7 @@ class MemberOrderAPIView(APIView):
         return Response(mes)
 
 
+# 课程订单
 class OrderRecordAPIView(APIView):
     def get(self, request):
         ret = {}
@@ -698,14 +739,252 @@ class OrderRecordAPIView(APIView):
         return Response(mes)
 
 
+# 添加评论
+from utils.recursive_query import sub_comment
+from utils.mongo_pool import client, getNextValue
+
+
+# 添加评论
+class SubmitAddComment(APIView):
+    def post(self, request):
+        content = request.data
+        try:
+            pid = int(content['pid'])
+        except:
+            pid = 0
+        # 通过PID构造top_id,type
+        if pid == 0:
+            type = 1
+            top_id = 0
+        else:
+
+            db = client['dbdb']
+            slist = db['comment']
+
+            type1 = slist.find({'_id': pid})
+            print(type1)
+
+            for item in type1:
+                u = User.objects.get(id=item['user_id'])
+                print(u)
+                content['username'] = u.username
+                print(item, '查询')
+                type = item['type'] + 1
+                print(type, 'type')
+
+                if item['top_id'] == 0:
+                    top_id = item['_id']
+                else:
+                    top_id = item['top_id']
+
+        content['create_time'] = time.strftime("%Y-%m-%d %H:%I:%S", time.localtime(time.time()))
+        content['type'] = type
+        content['status'] = 1
+        content['pid'] = pid
+        content['top_id'] = top_id
+        print(content)
+
+        db = client['dbdb']
+        comm = db['comment']
+        content['_id'] = getNextValue('name')
+        comm.insert_one(content)
+        mes = {}
+        mes['code'] = 200
+        mes['message'] = '评论成功'
+        return Response(mes)
+
+    def get(self, request):
+        # 读取mongo评论数据
+        course_id = request.GET.get('course_id')
+        c = sub_comment(course_id)
+        print(c)
+        return Response(c)
+
+
+# 推荐
+class RecommendAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        user_id = request.GET.get('user_id')
+        if user_id:
+            dic = dict()
+            for user in User.objects.all():
+                if user.orderrecord_set.count() != 0:
+                    dic[str(user.id)] = tuple((x.course_id_id for x in user.orderrecord_set.all()))
+            W3 = Usersim(dic)
+            Last_Rank = Recommend(user_id, dic, W3, 6)
+            ret['courseList'] = []
+            for id in Last_Rank.keys():
+                courseList = Course.objects.get(id=id)
+                ret['courseList'].append({'id': id, 'title': courseList.title, 'pic': courseList.pic})
+            ret['code'] = 200
+            ret['message'] = '成功'
+        else:
+            ret['code'] = 601
+            ret['message'] = '失败'
+        return Response(ret)
+
+
+# 计算用户兴趣相似度
+def Usersim(dicc):
+    # 把用户-商品字典转成商品-用户字典（如图中箭头指示那样）
+    item_user = dict()
+    for u, items in dicc.items():
+        for i in items:  # 文中的例子是不带评分的，所以用的是元组而不是嵌套字典。
+            if i not in item_user.keys():
+                item_user[i] = set()  # i键所对应的值是一个集合（不重复）。
+            item_user[i].add(u)  # 向集合中添加用户。
+
+    C = dict()  # 感觉用数组更好一些，真实数据集是数字编号，但这里是字符，这边还用字典。
+    N = dict()
+    for item, users in item_user.items():
+        for u in users:
+            if u not in N.keys():
+                N[u] = 0  # 书中没有这一步，但是字典没有初始值不可以直接相加吧
+            N[u] += 1  # 每个商品下用户出现一次就加一次，就是计算每个用户一共购买的商品个数。
+            # 但是这个值也可以从最开始的用户表中获得。
+            # 比如： for u in dic.keys():
+            #             N[u]=len(dic[u])
+            for v in users:
+                if u == v:
+                    continue
+                if (u, v) not in C.keys():  # 同上，没有初始值不能+=
+                    C[u, v] = 0
+                C[u, v] += 1  # 这里我不清楚书中是不是用的嵌套字典，感觉有点迷糊。所以我这样用的字典。
+    # 到这里倒排阵就建立好了，下面是计算相似度。
+    W = dict()
+    for co_user, cuv in C.items():
+        W[co_user] = cuv / math.sqrt(N[co_user[0]] * N[co_user[1]])  # 因为我不是用的嵌套字典，所以这里有细微差别。
+    return W
+
+
+# 如果用户买过的商品完全一致,相似度为1
+def Recommend(user, dicc, W2, K):
+    """
+    :param user: 用户
+    :param dicc:
+    :param W2: 用户兴趣相似度字典
+    :param K: 找到K个相关用户以及对应兴趣相似度，按兴趣相似度从大到小排列
+    :return:
+    """
+    rvi = 1  # 这里都是1,实际中可能每个用户就不一样了。就像每个人都喜欢beautiful girl,但有的喜欢可爱的多一些，有的喜欢御姐多一些。
+    rank = dict()
+    related_user = []
+    interacted_items = dicc[user]  # 用户买过的课程
+    # 遍历 “用户兴趣相似度字典” 将和指定用户相关的数据放入列表 => 和待推荐用户兴趣相关的所有的用户列表
+    for co_user, item in W2.items():
+        if co_user[0] == user:
+            related_user.append((co_user[1], item))  # co_user[1]相似用户的id ,item相似用户购买的课程
+    for v, wuv in sorted(related_user, key=itemgetter(1), reverse=True)[0:K]:  # itemgetter(1) 根据元组内下标是1 的对象排序,即相似度
+
+        # K 相似度排前K的用户
+        # 找到K个相关用户以及对应兴趣相似度，按兴趣相似度从大到小排列。itemgetter要导包。
+        for i in dicc[v]:
+            if i in interacted_items:  # 如果用户买过就不再推荐
+                continue
+            if i not in rank.keys():  # 如果还未推荐，给用户推荐
+                rank[i] = 0
+            rank[i] += wuv * rvi  # 用户对该课程的用户感兴趣的程度
+    return rank
+
+
+# 关注数
+class UploadCourse(APIView):
+    def post(self, request):
+        mes = {}
+        c = []
+        cid = request.data['id']
+        uid = request.data['user_id']
+        c = [x.course_id for x in CourseCollect.objects.all()]
+        if cid in c:
+            CourseCollect.objects.filter(user_id=uid, course_id=cid).delete()
+            course = Course.objects.get(id=cid)
+            course.attention -= 1
+            course.save()
+            c = [x.course_id for x in CourseCollect.objects.all()]
+            mes['clist'] = c
+            mes['code'] = 200
+            mes['message'] = '取消关注成功'
+        else:
+            c = CourseCollect.objects.create(user_id=uid, course_id=cid)
+            c.save()
+            course = Course.objects.get(id=cid)
+            course.attention += 1
+            course.save()
+            c = [x.course_id for x in CourseCollect.objects.all()]
+            mes['code'] = 200
+            mes['clist'] = c
+            mes['message'] = '关注成功'
+        return Response(mes)
+
+    def get(self, request):
+        mes = {}
+        user_id = request.GET.get('user_id')
+        if user_id:
+            mes['code'] = 200
+            mes['message'] = 'ok'
+            mes['clist'] = [x.course_id for x in CourseCollect.objects.filter(user_id=user_id).all()]
+            print(mes['clist'])
+            mes['courseList'] = CourseSerializersModel(Course.objects.filter(coursecollect__user_id=user_id).all(),
+                                                       many=True).data
+            mes['learnList'] = UserCourseSerializersModel(UserCourse.objects.filter(user_id=user_id).all(),
+                                                          many=True).data
+        else:
+            mes['code'] = 200
+            mes['message'] = 'ok'
+        return Response(mes)
+
+    def put(self, request):
+        data = request.data.copy()
+        print(data)
+        if data.get('section_id'):
+            UserCourse.objects.create(course_id=data['course_id'], section_id=data['section_id'],
+                                      user_id=data['user_id'])
+        elif data.get('teacher_id'):
+            ut = UserTeacher.objects.filter(user_id=data['user_id'], teacher_id=data['teacher_id'])
+            if ut:
+                ut.delete()
+            else:
+                UserTeacher.objects.create(user_id=data['user_id'], teacher_id=data['teacher_id'])
+        ret = {}
+        ret['code'] = 200
+        ret['message'] = 'ok'
+        return Response()
+
+
+# 用户站内信
+class UserSiteMessageAPIView(APIView):
+    def get(self, request):
+        ret = {}
+        user_id = request.GET.get('user_id')
+        messageList = UserSiteMessage.objects.filter(user_id=user_id).all()
+        print(messageList)
+        messageList = UserSiteMessageSerializersModel(messageList, many=True).data
+
+        ret['messageList'] = messageList
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+    def post(self, request):
+        ret = {}
+        data = request.data
+        print(data)
+        s = UserSiteMessage.objects.get(id=data['mid'])
+        s.status = 1
+        s.save()
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
+
+# 秒杀
 class SkAPIView(APIView):
     def get(self, request):
         ret = {}
         conn = redis.Redis(connection_pool=POOL)
-        courses = conn.hget('course', str(datetime.datetime.now())[:10])
-        print(courses)
-        courses = json.loads(courses)
-        ret['courses'] = courses
+        courses = conn.hgetall('course' + str(datetime.datetime.now())[:10])
+        ret['courses'] = [json.loads(x) for x in dict(courses).values()]
         ret['code'] = 200
         ret['message'] = '成功'
         return Response(ret)
@@ -717,21 +996,15 @@ class SkAPIView(APIView):
 
         user = User.objects.get(id=data['user_id'])  # 用户
         conn = redis.Redis(connection_pool=POOL)
-        courses = conn.hget('course', str(datetime.datetime.now())[:10])
-        print(courses)
-        courses = json.loads(courses)
-        course = {}
-        for item in courses:
-            print(int(item['course']) == int(data['course_id']))
-            if int(item['course']) == int(data['course_id']):
-                course = item
-        print(course)
+        course = conn.hget('course' + str(datetime.datetime.now())[:10], data['course_id'])
+        course = json.loads(course)
         # 效验信息: 用户存在,课程在秒杀表,课程数量充足
         timeNow = time.strftime('%H:%M:%S', time.localtime(time.time()))  # 现在时间
         # 判断用户, 库存,时间是否在规定范围内
         print(course['start'] < timeNow < course['end'])
         if user and int(course['count']) > 0 and course['start'] < timeNow < \
                 course['end']:
+            seckill(course)
             data['num'] = 0
             data['coupon'] = ''
             data['order_number'] = str(uuid.uuid1()).replace('-', '')
@@ -746,55 +1019,78 @@ class SkAPIView(APIView):
         return Response(ret)
 
 
+redis_client = redis.Redis(connection_pool=POOL)
+#获取一个锁
+# lock_name：锁定名称
+# acquire_time: 客户端等待获取锁的时间
+# time_out: 锁的超时时间
+def acquire_lock(lock_name, acquire_time=10, time_out=10):
+    """获取一个分布式锁,其实就是给锁设置一个超时时间并返回一个锁的标识"""
+    identifier = str(uuid.uuid4())
+    # 获取锁的结束时间
+    end = time.time() + acquire_time
+    # 锁的名称
+    lock = "string:lock:" + lock_name
+    while time.time() < end:
+        if redis_client.setnx(lock, identifier):
+            # 给锁设置超时时间, 防止进程崩溃导致其他进程无法获取锁
+            redis_client.expire(lock, time_out)
+            return identifier
+        # 判断当前锁是否还存在过期时间, ttl返回剩余的过期时间
+        elif not redis_client.ttl(lock):
+            redis_client.expire(lock, time_out)
+        time.sleep(0.001)
+    return False
 
-# 添加评论
-class SubmitAddComment ( APIView ):
-    def post( self, request):
-        content =request.data
+
+#释放一个锁
+def release_lock(lock_name, identifier):
+    """通用的锁释放函数"""
+    lock = "string:lock:" + lock_name
+    # 开启一个队列
+    pip = redis_client.pipeline(True)
+    while True:
         try:
-            pid = int(content['pid'])
-            print(pid,'pid')
+            # 对lock这个锁进行监听
+            pip.watch(lock)
+            lock_value = redis_client.get(lock)
+            if not lock_value:
+                return True
+            if lock_value.decode() == identifier:
+                print('查看标识', lock_value.decode())
+                # 标记一个事务块的开始,事务内的命令会放在队列中
+                pip.multi()
+                # 删除锁
+                pip.delete(lock)
+                # 最后有execute触发执行事务
+                pip.execute()
+                return True
+            # 取消监听
+            pip.unwatch()
+            # 退出
+            break
         except:
-            pid = 0
-        #通过PID构造top_id,type
-        if pid == 0:
-            type = 1
-            top_id = 0
+        # except redis.excetions.WacthcError:
+            pass
+    return False
+
+
+
+def seckill(one_buy):
+    identifier=acquire_lock('resource')
+    if identifier:
+        time.sleep(1)
+        if one_buy['count']<1:
+            print("没抢到，产品没有了")
+            release_lock('resource', identifier)
+            return False
         else:
-            type = None
-            top_id = None
-            db = client['dbdb']
-            slist = db['comment']
-            type1 = slist.find({'_id':pid})
-            for item in type1:
-                print(item,'查询')
-                type = item['type']+1
-                print(type,'type')
-
-                if item['top_id']== 0:
-                    top_id = item['_id']
-                else:
-                    top_id = item['top_id']
-
-        content['create_time'] = time.strftime("%Y-%m-%d %H:%I:%S", time.localtime( time.time() ) )
-        content['type'] = type
-        content['status'] = 1
-        content['pid'] = pid
-        content['top_id'] = top_id
-        print(content)
-
-        db = client[ 'dbdb' ]
-        comm = db[ 'comment' ]
-        content['_id'] =getNextValue('name')
-        comm.insert_one(content)
-        mes = {}
-        mes['code'] = 200
-        mes['message'] = '评论成功'
-        return Response(mes)
-
-    def get(self,request):
-        # 读取mongo评论数据
-        course_id = request.GET.get('course_id')
-        c = sub_comment(course_id)
-        return Response(c)
-
+            one_buy['count'] -= 1
+            redis_client.hset('course' + str(datetime.datetime.now())[:10],
+                              str(one_buy['act']) + ',' + str(one_buy['time']) + ',' + str(one_buy['course']),
+                              json.dumps(one_buy))
+            print("抢到一个产品，还剩%d张票" % one_buy['count'])
+            release_lock('resource', identifier)
+            return True
+    else:
+        return False

@@ -385,3 +385,22 @@ class SkSerializersModel(serializers.ModelSerializer):
     class Meta:
         model = Sk
         fields = '__all__'
+
+
+class UserSiteMessageSerializersModel(serializers.ModelSerializer):
+    title = serializers.CharField(source='message.title')
+    content = serializers.CharField(source='message.content')
+
+    class Meta:
+        model = UserSiteMessage
+        fields = '__all__'
+
+
+class UserCourseSerializersModel(serializers.ModelSerializer):
+    course_name = serializers.CharField(source='course.title')
+    pic = serializers.CharField(source='course.pic')
+    section_name = serializers.CharField(source='section.section')
+
+    class Meta:
+        model = UserCourse
+        fields = '__all__'
