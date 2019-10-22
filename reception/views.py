@@ -795,9 +795,16 @@ class SubmitAddComment(APIView):
 
     def get(self, request):
         # 读取mongo评论数据
+        ret = {}
         course_id = request.GET.get('course_id')
-        c = sub_comment(course_id)
-        print(c)
+        c=[]
+        try:
+            c = sub_comment(course_id)
+            ret['code'] = 200
+            ret['message'] = 'ok'
+        except:
+            ret['code']=601
+            ret['message']='失败'
         return Response(c)
 
 
@@ -1020,7 +1027,9 @@ class SkAPIView(APIView):
 
 
 redis_client = redis.Redis(connection_pool=POOL)
-#获取一个锁
+
+
+# 获取一个锁
 # lock_name：锁定名称
 # acquire_time: 客户端等待获取锁的时间
 # time_out: 锁的超时时间
@@ -1043,7 +1052,7 @@ def acquire_lock(lock_name, acquire_time=10, time_out=10):
     return False
 
 
-#释放一个锁
+# 释放一个锁
 def release_lock(lock_name, identifier):
     """通用的锁释放函数"""
     lock = "string:lock:" + lock_name
@@ -1070,17 +1079,16 @@ def release_lock(lock_name, identifier):
             # 退出
             break
         except:
-        # except redis.excetions.WacthcError:
+            # except redis.excetions.WacthcError:
             pass
     return False
 
 
-
 def seckill(one_buy):
-    identifier=acquire_lock('resource')
+    identifier = acquire_lock('resource')
     if identifier:
         time.sleep(1)
-        if one_buy['count']<1:
+        if one_buy['count'] < 1:
             print("没抢到，产品没有了")
             release_lock('resource', identifier)
             return False
