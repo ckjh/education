@@ -38,6 +38,7 @@ urlpatterns = [
     path('submit/', views.SubmitAddComment.as_view()),  # 添加读取评论
     path('recommend/', views.RecommendAPIView.as_view()),
     path('uploadcourse/', views.UploadCourse.as_view()),
-    path('mySiteMessage/',views.UserSiteMessageAPIView.as_view())
+    path('mySiteMessage/', views.UserSiteMessageAPIView.as_view()),
+    path('richText/', views.RichTextAPIView.as_view())
 
 ]

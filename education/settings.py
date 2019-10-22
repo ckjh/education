@@ -160,7 +160,7 @@ DATABASE_ROUTERS = ['utils.db_router.MasterSlaveRouter']
 
 PIC_URL = 'http://116.62.155.103:8888/'
 # DEFAULT_FILE_STORAGE = 'admin01.storage.FastDFSStorage'
-SIP='106.13.222.216'
+SIP = '106.13.222.216'
 IP = '116.62.155.103'
 USER = 'root'  # 用户名
 PASSWORD = 'YTYyty2211'  # 密码
@@ -171,7 +171,7 @@ djcelery.setup_loader()
 BROKER_URL = 'amqp://username01:password01@116.62.155.103:5672/myvhost'
 CELERY_IMPORTS = ('reception.task')  # 任务路径
 CELERY_RESULT_BACKEND = 'amqp://hnq:123456@116.62.155.103:5672/myvhost'
-CELERY_TIMEZONE='UTC'
+CELERY_TIMEZONE = 'UTC'
 CELERYBEAT_SCHEDULER = 'djcelery.schedulers.DatabaseScheduler'
 
 APP_KEY = '3345882312'
@@ -180,3 +180,4 @@ CALLBACK_URL = 'http://127.0.0.1:8080/weibo_callback/'
 MemberPayCallBack = "http://127.0.0.1:8000/memberOrder/"
 CoursePayCallBack = "http://127.0.0.1:8000/courseOrder/"
 UserCenterUrl = 'http://localhost:8080/userCenter'
+IndexCenterUrl = 'http://localhost:8080'

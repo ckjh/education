@@ -54,8 +54,10 @@ class Video(APIView):
     def post(self, request):
         data = request.data
         video = get_pic_url(data['file'])
-        print(data)
+        print('图片上传成功', data)
         mes = {}
+        mes['errno'] = 0
+        mes['data'] = [video]
         mes['url'] = video
         return Response(mes)
 

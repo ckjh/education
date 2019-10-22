@@ -261,6 +261,7 @@ class UserCourse(Base):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='章节外键')
     # 完成状态0未完成1完成
     status = models.IntegerField(default=1)
+
     class Meta():
         db_table = 'user_course'
 
@@ -291,10 +292,10 @@ class Price(Base):
 class Report(Base):
     section = models.ForeignKey(Section, on_delete=models.CASCADE, verbose_name='章节ID')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='用户ID')
-    report_content = models.CharField(max_length=50, verbose_name='报告内容')
+    report_content = models.TextField(max_length=2000, default='')
     report_title = models.CharField(max_length=50, verbose_name='报告标题')
-    report_browse = models.IntegerField(verbose_name='实验报告浏览量')
-    linknum = models.IntegerField(verbose_name='点赞树')
+    report_browse = models.IntegerField(verbose_name='实验报告浏览量', default=0)
+    linknum = models.IntegerField(verbose_name='点赞树', default=0)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='课程ID')
 
     class Meta():

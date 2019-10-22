@@ -23,9 +23,8 @@ from utils.captcha.captcha import captcha
 from reception.serializers import *
 from django.db import transaction
 import hashlib
-from django.core.paginator import Paginator
-from utils.recursive_query import sub_comment
-from utils.mongo_pool import client, getNextValue
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 
 
 # 验证码 获取文本
@@ -148,8 +147,7 @@ class ForGetPwd(APIView):
         else:
             mes['code'] = 10020
             mes['message'] = '邮箱格式错误'
-
-        return Response(mes)
+        return redirect(settings.UserCenterUrl)
 
 
 class ThirdPartAPIView(APIView):
@@ -457,6 +455,9 @@ class MyCoupon(APIView):
 
 # 用户信息
 class UserInfoAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
     def get(self, request):
         ret = {}
         user_id = request.GET.get('user_id')
@@ -505,6 +506,9 @@ class UserInfoAPIView(APIView):
 
 # 会员订单
 class MemberOrderAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JSONWebTokenAuthentication]
+
     def get(self, request):
         # 支付成功立即自动回调这个借口,会传回几个参数,其中我们取出订单号,流水号
         order_sn = request.GET.get('out_trade_no')  # 订单号
@@ -797,14 +801,14 @@ class SubmitAddComment(APIView):
         # 读取mongo评论数据
         ret = {}
         course_id = request.GET.get('course_id')
-        c=[]
+        c = []
         try:
             c = sub_comment(course_id)
             ret['code'] = 200
             ret['message'] = 'ok'
         except:
-            ret['code']=601
-            ret['message']='失败'
+            ret['code'] = 601
+            ret['message'] = '失败'
         return Response(c)
 
 
@@ -987,6 +991,7 @@ class UserSiteMessageAPIView(APIView):
 
 # 秒杀
 class SkAPIView(APIView):
+
     def get(self, request):
         ret = {}
         conn = redis.Redis(connection_pool=POOL)
@@ -1102,3 +1107,38 @@ def seckill(one_buy):
             return True
     else:
         return False
+
+
+# 富文本编辑器
+class RichTextAPIView(APIView):
+    def get(self, request):  # 展示课程
+        ret = {}
+        course = request.GET.get('course')
+        try:
+            dataList = Report.objects.filter(course=course).all()
+            dataList = ReportSerializersModel(dataList, many=True)
+            ret['dataList'] = dataList.data
+            ret['code'] = 200
+            ret['message'] = '成功'
+        except Exception as ex:
+            print(ex)
+            ret['code'] = 601
+            ret['message'] = '数据库错误'
+        return Response(ret)
+
+    def post(self, request):
+        data = request.data.copy()
+        print(data)
+        mes = {}
+        # myreport = Report.objects.all()
+        ser = ReportSerializersModel(data=data)
+        if ser.is_valid():
+            ser.save()
+            mes['code'] = 200
+            mes['message'] = "添加成功"
+        else:
+            print(ser.errors)
+            mes['code'] = 600
+            mes['message'] = "添加失败"
+
+        return Response(mes)

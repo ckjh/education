@@ -1,5 +1,6 @@
 ﻿from rest_framework import serializers
 from admin01.models import *
+from reception.serializers import *
 
 
 # 用户等级序列化类
@@ -175,6 +176,15 @@ class CourseSerializersModel(serializers.ModelSerializer):
     teacher_id = serializers.IntegerField()
     path_id = serializers.IntegerField()
     tag_id = serializers.IntegerField()
+    prices = serializers.SerializerMethodField()
+
+    def get_prices(self, row):
+        try:
+            n = Price.objects.filter(course_id=row.id).all().order_by('discount')
+            n = PriceSerializersModel(n, many=True).data
+        except:
+            n = {}
+        return n
 
     class Meta:
         model = Course
@@ -225,6 +235,15 @@ class CourseSerializers(serializers.Serializer):
 
 # 讲师的序列化
 class TeacherSerializersModel(serializers.ModelSerializer):
+    num = serializers.SerializerMethodField()
+
+    def get_num(self, row):
+        try:
+            n = Course.objects.filter(teacher_id=row.id).count()
+        except:
+            n = 0
+        return n
+
     class Meta:
         model = Teacher
         fields = '__all__'
@@ -404,3 +423,53 @@ class UserCourseSerializersModel(serializers.ModelSerializer):
     class Meta:
         model = UserCourse
         fields = '__all__'
+
+
+class ReportSerializersModel(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username')
+    pic = serializers.CharField(source='user.img')
+    section_name = serializers.CharField(source='section.section')
+    course_name = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+
+    def get_count(self, row):
+        try:
+            n = len(row.report_content)
+        except:
+            n = 0
+        return n
+
+    def get_course_name(self, row):
+        try:
+            n = Course.objects.get(id=row.course).title
+        except:
+            n = 0
+        return n
+
+    class Meta:
+        model = Report
+        fields = '__all__'
+
+
+class ReportSerializers(serializers.Serializer):
+    section = serializers.IntegerField()
+    user = serializers.IntegerField()
+    report_content = serializers.CharField()
+    report_title = serializers.CharField()
+    report_browse = serializers.IntegerField(default=0, allow_null=True)
+    linknum = serializers.IntegerField(default=0, allow_null=True)
+    course = serializers.IntegerField()
+
+    def create(self, data):
+        m = Report.objects.create(**data)
+
+    def update(self, instance, data):
+        instance.section = data['section']
+        instance.user = data['user']
+        instance.report_content = data['report_content']
+        instance.report_title = data['report_title']
+        instance.report_browse = data['report_browse']
+        instance.seclinknumtion = data['linknum']
+        instance.course = data['course']
+        instance.save()
+        return instance
