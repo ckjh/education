@@ -169,3 +169,38 @@ def sub_questdetail(quest_id):
             dic['back_username'] = ''
         list.append(dic)
     return list
+
+
+def sub_usercomment(course):
+    db = client['dbdb']
+    comm = db['discomment']
+    c = comm.find({'user_id': str(course), 'types': 1, 'status': 1}).sort(
+        [("create_time", pymongo.DESCENDING)])  # 获取 本课程下 的所有评论 根据时间排序 及审核通过的
+    list = []
+    if c:
+        for i in c:
+            dic = {}
+            print(i)
+            user_id = i['user_id']
+            u = User.objects.get(id=user_id)
+            m = Member.objects.get(user_id=u.id)
+            s = UserLevel.objects.get(id=m.level_id)
+            dic['username'] = u.username
+            dic['img'] = u.img
+            dic['userlevel'] = s.level
+            dic['_id'] = i['_id']
+            dic['content'] = i['content']
+            dic['pid'] = i['pid']
+            dic['top_id'] = i['top_id']
+            dic['type'] = i['type']
+            dic['user_id'] = i['user_id']
+            dic['title'] = i['title']
+            dic['status'] = i['status']
+            dic['create_time'] = i['create_time']
+            try:
+                dic['back_username'] = i['username']
+            except:
+                dic['back_username'] = ''
+            list.append(dic)
+        return list
+    return []

@@ -18,6 +18,7 @@ import hashlib
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
 from utils.recursive_query import *
+from utils.word_filter import BaiduAi
 
 
 # 验证码 获取文本
@@ -759,6 +760,8 @@ class SubmitAddComment(APIView):
         data = request.data.copy()
         content = {}
         content['content'] = data['content']
+        if BaiduAi(data['content'])['code'] != 0:
+            return Response({'code': 670, 'message': '您的评论包含敏感词汇'})
         content['user_id'] = data['user_id']
         print(data)
         if data.get('quest_id'):
@@ -1248,9 +1251,9 @@ class AddComment(APIView):
         return Response(mes)
 
     def get(self, request):
-
         ret = {}
         types = request.GET.get('types')
+        user_id = request.GET.get('user_id')
         diss_id = request.GET.get('diss_id')
         disscom_id = request.GET.get('disscom_id')
         c = []
@@ -1264,6 +1267,8 @@ class AddComment(APIView):
             ret['message'] = 'ok'
         elif disscom_id:
             c = sub_commentdetail(disscom_id)
+        elif user_id:
+            c = sub_usercomment(user_id)
             ret['code'] = 200
             ret['message'] = 'ok'
         return Response(c)
