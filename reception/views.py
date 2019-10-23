@@ -251,7 +251,7 @@ class ShowCoursesAPIView(APIView):
             # dataList = CourseSerializersModel(dataList, many=True)
             # ret['dataList'] = dataList.data
             # 解决首页加载慢的问题
-            dataList = [{'id': item.id, 'title': item.title, 'pic': item.pic} for item in dataList]
+            dataList = [{'id': item.id, 'title': item.title, 'pic': item.pic, 'learn': item.learn} for item in dataList]
             ret['dataList'] = dataList
             ret['code'] = 200
             ret['message'] = '成功'
