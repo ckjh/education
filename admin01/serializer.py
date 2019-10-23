@@ -429,7 +429,7 @@ class ReportSerializersModel(serializers.ModelSerializer):
     username = serializers.CharField(source='user.username')
     pic = serializers.CharField(source='user.img')
     section_name = serializers.CharField(source='section.section')
-    course_name = serializers.SerializerMethodField()
+    course_name = serializers.CharField(source='course.title')
     count = serializers.SerializerMethodField()
 
     def get_count(self, row):
@@ -438,30 +438,23 @@ class ReportSerializersModel(serializers.ModelSerializer):
         except:
             n = 0
         return n
-
-    def get_course_name(self, row):
-        try:
-            n = Course.objects.get(id=row.course).title
-        except:
-            n = 0
-        return n
-
     class Meta:
         model = Report
         fields = '__all__'
 
 
 class ReportSerializers(serializers.Serializer):
-    section = serializers.IntegerField()
-    user = serializers.IntegerField()
+    section_id = serializers.IntegerField()
+    user_id = serializers.IntegerField()
     report_content = serializers.CharField()
     report_title = serializers.CharField()
     report_browse = serializers.IntegerField(default=0, allow_null=True)
     linknum = serializers.IntegerField(default=0, allow_null=True)
-    course = serializers.IntegerField()
+    course_id = serializers.IntegerField()
 
     def create(self, data):
         m = Report.objects.create(**data)
+        return m
 
     def update(self, instance, data):
         instance.section = data['section']

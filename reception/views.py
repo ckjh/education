@@ -1,30 +1,23 @@
+import pymongo
 import requests
-import uuid
-import json
-import redis
 import math
 from operator import *
 import paramiko
 import re
 import threading
-import datetime
 from django.shortcuts import render, HttpResponse, redirect
 from rest_framework_jwt.settings import api_settings  # jwt中的配置项 api_settings
 from django.contrib.auth.hashers import check_password, make_password
-from django.core.paginator import Paginator
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from admin01.serializer import *
-from admin01.serializer import CourseSerializersModel
 from admin01.views import get_pic_url, delete_file
-from utils.redis_pool import POOL
 from reception.task import *
 from utils.captcha.captcha import captcha
 from reception.serializers import *
-from django.db import transaction
 import hashlib
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_jwt.authentication import JSONWebTokenAuthentication
+from utils.recursive_query import *
 
 
 # 验证码 获取文本
@@ -254,8 +247,11 @@ class ShowCoursesAPIView(APIView):
         if member != '-1': searchDict['member'] = member  # member 是否为会员课程，0 否 1 是 -1 全部
         try:
             dataList = Course.objects.filter(**searchDict).order_by(sort)
-            dataList = CourseSerializersModel(dataList, many=True)
-            ret['dataList'] = dataList.data
+            # dataList = CourseSerializersModel(dataList, many=True)
+            # ret['dataList'] = dataList.data
+            # 解决首页加载慢的问题
+            dataList = [{'id': item.id, 'title': item.title, 'pic': item.pic} for item in dataList]
+            ret['dataList'] = dataList
             ret['code'] = 200
             ret['message'] = '成功'
         except Exception as ex:
@@ -331,6 +327,15 @@ def webssh(request):
 
 # 加入路径
 class MyPath(APIView):
+    def get(self, request):
+        ret = {}
+        user_id = request.GET.get('user_id')
+        ret['paths'] = [{'id': path.id, 'name': path.name, 'pic': path.pic} for path in
+                        Path.objects.filter(userpath__user_id=user_id).all()]
+        ret['code'] = 200
+        ret['message'] = '成功'
+        return Response(ret)
+
     def post(self, request):
         path_id = request.data['path_id']
         user_id = request.data['user_id']
@@ -469,6 +474,7 @@ class UserInfoAPIView(APIView):
         ret['myCoupon'] = [x.cid for x in Usercoupon.objects.filter(user_id=user_id).all()]
         ret['cList'] = [x.course_id for x in CourseCollect.objects.filter(user_id=user_id).all()]
         ret['lList'] = [x.section_id for x in UserCourse.objects.filter(user_id=user_id).all()]
+        ret['lcList'] = [x.course_id for x in UserCourse.objects.filter(user_id=user_id).all()]
         ret['tList'] = [x.teacher_id for x in UserTeacher.objects.filter(user_id=user_id).all()]
         ret['code'] = 200
         ret['message'] = '成功'
@@ -476,10 +482,9 @@ class UserInfoAPIView(APIView):
 
     def put(self, request):
         mes = {}
-        user_id = request.GET.get('user_id')
-        data = request.data
+        data = request.data.copy()
         print(data)
-        user = User.objects.get(id=user_id)
+        user = User.objects.get(id=data['user_id'])
         # 如果用户输了密码
         # 如果用户在修改头像
         if data.get('file'):
@@ -751,7 +756,15 @@ from utils.mongo_pool import client, getNextValue
 # 添加评论
 class SubmitAddComment(APIView):
     def post(self, request):
-        content = request.data
+        data = request.data.copy()
+        content = {}
+        content['content'] = data['content']
+        content['user_id'] = data['user_id']
+        print(data)
+        if data.get('quest_id'):
+            content['quest_id'] = data['quest_id']
+        content['pid'] = data['pid']
+        content['course_id'] = data['course_id']
         try:
             pid = int(content['pid'])
         except:
@@ -761,14 +774,15 @@ class SubmitAddComment(APIView):
             type = 1
             top_id = 0
         else:
-
             db = client['dbdb']
             slist = db['comment']
 
-            type1 = slist.find({'_id': pid})
+            type1 = slist.find({'_id': str(pid)})
+            # print(type())
             print(type1)
 
             for item in type1:
+                print(type1)
                 u = User.objects.get(id=item['user_id'])
                 print(u)
                 content['username'] = u.username
@@ -786,11 +800,11 @@ class SubmitAddComment(APIView):
         content['status'] = 1
         content['pid'] = pid
         content['top_id'] = top_id
-        print(content)
 
         db = client['dbdb']
         comm = db['comment']
-        content['_id'] = getNextValue('name')
+        content['_id'] = str(getNextValue('name'))
+        print(content)
         comm.insert_one(content)
         mes = {}
         mes['code'] = 200
@@ -801,14 +815,21 @@ class SubmitAddComment(APIView):
         # 读取mongo评论数据
         ret = {}
         course_id = request.GET.get('course_id')
+        quest_id = request.GET.get('quest_id')
         c = []
         try:
-            c = sub_comment(course_id)
+            if course_id:
+                c = sub_comment(course_id)
+            elif quest_id:
+                c = sub_questdetail(quest_id)
+                print('================++++++++++++++')
+                print(c, '=================================')
             ret['code'] = 200
             ret['message'] = 'ok'
         except:
             ret['code'] = 601
             ret['message'] = '失败'
+        print(ret)
         return Response(c)
 
 
@@ -1114,9 +1135,22 @@ class RichTextAPIView(APIView):
     def get(self, request):  # 展示课程
         ret = {}
         course = request.GET.get('course')
+        user_id = request.GET.get('user_id')
+        report_id = request.GET.get('report_id')
+        dataList = []
         try:
-            dataList = Report.objects.filter(course=course).all()
-            dataList = ReportSerializersModel(dataList, many=True)
+            if course:
+                dataList = Report.objects.filter(course=course).all()
+                dataList = ReportSerializersModel(dataList, many=True)
+            elif user_id:
+                dataList = Report.objects.filter(user_id=user_id).all()
+                dataList = ReportSerializersModel(dataList, many=True)
+            elif report_id:
+                dataList = Report.objects.get(id=report_id)
+                dataList = ReportSerializersModel(dataList, many=False)
+            else:
+                dataList = Report.objects.all()
+                dataList = ReportSerializersModel(dataList, many=True)
             ret['dataList'] = dataList.data
             ret['code'] = 200
             ret['message'] = '成功'
@@ -1131,7 +1165,7 @@ class RichTextAPIView(APIView):
         print(data)
         mes = {}
         # myreport = Report.objects.all()
-        ser = ReportSerializersModel(data=data)
+        ser = ReportSerializers(data=data)
         if ser.is_valid():
             ser.save()
             mes['code'] = 200
@@ -1142,3 +1176,94 @@ class RichTextAPIView(APIView):
             mes['message'] = "添加失败"
 
         return Response(mes)
+
+    def delete(self, request):
+        data = request.data.copy()
+        print(data)
+        mes = {}
+        try:
+            report = Report.objects.filter(id=data['id']).first()
+            report.delete()
+            mes['code'] = 200
+            mes['message'] = "删除成功"
+        except:
+            mes['code'] = 600
+            mes['message'] = "添加失败"
+        return Response(mes)
+
+
+class AddComment(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        content = {}
+        content['content'] = data['content']
+        content['user_id'] = data['user_id']
+        content['types'] = 1
+        print(data)
+        if not data.get('course_id'):
+            content['course_id'] = 0
+        else:
+            content['course_id'] = data['course_id']
+        if not data.get('diss_id'):
+            content['diss_id'] = 0
+        else:
+            content['diss_id'] = int(data['diss_id'])
+        if not data.get('title'):
+            content['title'] = ''
+        else:
+            content['title'] = data['title']
+        try:
+            pid = int(content['pid'])
+        except:
+            pid = 0
+        if pid == 0:
+            type = 1
+            top_id = 0
+        else:
+
+            db = client['dbdb']
+            slist = db['discomment']
+
+            type1 = slist.find({'_id': pid})
+            for item in type1:
+                u = User.objects.get(id=item['user_id'])
+                content['username'] = u.username
+                type = item['type'] + 1
+                if item['top_id'] == 0:
+                    top_id = item['_id']
+                else:
+                    top_id = item['top_id']
+        content['create_time'] = time.strftime("%Y-%m-%d %H:%I:%S", time.localtime(time.time()))
+        content['type'] = type
+        content['status'] = 1
+        content['pid'] = pid
+        content['top_id'] = top_id
+        db = client['dbdb']
+        comm = db['discomment']
+        content['_id'] = getNextValue('name')
+        comm.insert_one(content)
+        mes = {}
+        mes['code'] = 200
+        mes['message'] = '提交成功'
+        return Response(mes)
+
+    def get(self, request):
+
+        ret = {}
+        types = request.GET.get('types')
+        diss_id = request.GET.get('diss_id')
+        disscom_id = request.GET.get('disscom_id')
+        c = []
+        if types:
+            c = sub_sscomment(types)
+            ret['code'] = 200
+            ret['message'] = 'ok'
+        elif diss_id:
+            c = sub_dissdetail(diss_id)
+            ret['code'] = 200
+            ret['message'] = 'ok'
+        elif disscom_id:
+            c = sub_commentdetail(disscom_id)
+            ret['code'] = 200
+            ret['message'] = 'ok'
+        return Response(c)

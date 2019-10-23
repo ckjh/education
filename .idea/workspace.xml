@@ -2,15 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/admin01/migrations/0024_auto_20191022_0838.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/admin01/migrations/0025_auto_20191022_1527.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/admin01/serializer.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/serializer.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/admin01/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/admin01/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/education/settings.py" beforeDir="false" afterPath="$PROJECT_DIR$/education/settings.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils/recursive_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/recursive_query.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -109,7 +106,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.tests (1)">
+  <component name="RunManager" selected="Django server.education">
     <configuration name="ceshi (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="education" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -313,7 +310,9 @@
       <workItem from="1571300970929" duration="19025000" />
       <workItem from="1571354010544" duration="25772000" />
       <workItem from="1571613063725" duration="33673000" />
-      <workItem from="1571699006280" duration="26279000" />
+      <workItem from="1571699006280" duration="42506000" />
+      <workItem from="1571801711655" duration="3781000" />
+      <workItem from="1571811842191" duration="21620000" />
     </task>
     <servers />
   </component>

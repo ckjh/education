@@ -39,6 +39,6 @@ urlpatterns = [
     path('recommend/', views.RecommendAPIView.as_view()),
     path('uploadcourse/', views.UploadCourse.as_view()),
     path('mySiteMessage/', views.UserSiteMessageAPIView.as_view()),
-    path('richText/', views.RichTextAPIView.as_view())
-
+    path('richText/', views.RichTextAPIView.as_view()),
+    path('dissubmit/', views.AddComment.as_view()),
 ]
