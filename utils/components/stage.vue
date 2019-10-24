@@ -50,8 +50,9 @@
                   <div class="col-xs-12">
 
                     <a class="btn btn-path-operation btn-join-path" data-sign="signin" href="javascript:;"
-                       data-toggle="modal" v-show="user_id !=undefined" @click="joinPath">加入路径</a>
-
+                       data-toggle="modal" v-show="user_id !=undefined" @click="joinPath" v-if='plist.indexOf(path_id)==-1'>加入路径</a>
+                    <a class="btn btn-path-operation btn-join-path" data-sign="signin" href="javascript:;"
+                       data-toggle="modal" v-show="user_id !=undefined" @click="joinPath" v-else>取消路径</a>
                     <p style="font-size:10px;margin-top:5px">加入获得路径课程更新提醒</p>
                   </div>
                 </div>
@@ -337,7 +338,9 @@
         data: function () {
             return {
                 path_id: 0,
+                code :0,
                 pathData: {},
+                plist:[],
                 pic: '',
                 user_id: localStorage.getItem('user_id')
             }
@@ -362,7 +365,10 @@
         methods: {
             joinPath: function () {
                 send('/api/mypath/', 'post', {'path_id': this.path_id, 'user_id': this.user_id}).then((res) => {
-                    if (res.data == 200) {
+                    if (res.data.code == 200) {
+                      send('/api/mypath/?user_id='+this.user_id,'get').then((res)=>{
+                        this.plist = res.data.plist
+                      })
                         alert('添加成功')
                     } else {
                         alert(res.data.message)
