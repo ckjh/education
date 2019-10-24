@@ -338,6 +338,7 @@ class MyPath(APIView):
         ret['paths'] = [{'id': path.id, 'name': path.name, 'pic': path.pic} for path in
                         Path.objects.filter(userpath__user_id=user_id).all()]
         ret['code'] = 200
+        ret['plist'] = [x.path_id for x in UserPath.objects.filter(user_id=user_id).all()]
         ret['message'] = '成功'
         return Response(ret)
 

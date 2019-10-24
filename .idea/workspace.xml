@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="" />
+    <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
+    </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,18 +77,18 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\86156\Desktop\education" />
-      <recent name="C:\Users\liguilindell\Desktop\education\reception" />
-      <recent name="C:\Users\86156\Desktop\education\admin01" />
-      <recent name="D:\ed\education\admin01" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\86156\Desktop\education\utils" />
       <recent name="C:\Users\86156\Desktop\education\reception" />
       <recent name="C:\Users\liguilindell\Desktop\education\utils" />
       <recent name="C:\Users\liguilindell\Desktop\education\reception" />
       <recent name="C:\Users\86156\Desktop\education" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\86156\Desktop\education" />
+      <recent name="C:\Users\liguilindell\Desktop\education\reception" />
+      <recent name="C:\Users\86156\Desktop\education\admin01" />
+      <recent name="D:\ed\education\admin01" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -307,7 +310,7 @@
       <workItem from="1571699006280" duration="42506000" />
       <workItem from="1571801711655" duration="3781000" />
       <workItem from="1571811842191" duration="28535000" />
-      <workItem from="1571873158882" duration="6624000" />
+      <workItem from="1571873158882" duration="6965000" />
     </task>
     <servers />
   </component>
