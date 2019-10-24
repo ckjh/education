@@ -16,11 +16,8 @@ def sub_comment(course):
         print(i)
         user_id = i['user_id']
         u = User.objects.get(id=user_id)
-        # m = Member.objects.get(user_id=u.id)
-        # s = UserLevel.objects.get(id=m.level_id)
         dic['username'] = u.username
         dic['img'] = u.img
-        # dic['userlevel'] = s.level
         dic['_id'] = i['_id']
         dic['content'] = i['content']
         dic['pid'] = i['pid']
@@ -49,11 +46,9 @@ def sub_commentdetail(course):
             dic = {}
             user_id = i['user_id']
             u = User.objects.get(id=user_id)
-            m = Member.objects.get(user_id=u.id)
-            s = UserLevel.objects.get(id=m.level_id)
             dic['username'] = u.username
             dic['img'] = u.img
-            dic['userlevel'] = s.level
+            dic['userlevel'] = ''
             dic['_id'] = i['_id']
             dic['content'] = i['content']
             dic['pid'] = i['pid']
@@ -82,11 +77,9 @@ def sub_dissdetail(course):
             dic = {}
             user_id = i['user_id']
             u = User.objects.get(id=user_id)
-            m = Member.objects.get(user_id=u.id)
-            s = UserLevel.objects.get(id=m.level_id)
             dic['username'] = u.username
             dic['img'] = u.img
-            dic['userlevel'] = s.level
+            dic['userlevel'] = ''
             dic['_id'] = i['_id']
             dic['content'] = i['content']
             dic['pid'] = i['pid']
@@ -116,11 +109,9 @@ def sub_sscomment(course):
             dic = {}
             user_id = i['user_id']
             u = User.objects.get(id=user_id)
-            m = Member.objects.get(user_id=u.id)
-            s = UserLevel.objects.get(id=m.level_id)
             dic['username'] = u.username
             dic['img'] = u.img
-            dic['userlevel'] = s.level
+            dic['userlevel'] = ''
             dic['_id'] = i['_id']
             dic['content'] = i['content']
             dic['pid'] = i['pid']
@@ -150,11 +141,9 @@ def sub_questdetail(quest_id):
         dic = {}
         user_id = i['user_id']
         u = User.objects.get(id=user_id)
-        m = Member.objects.get(user_id=u.id)
-        s = UserLevel.objects.get(id=m.level_id)
         dic['username'] = u.username
         dic['img'] = u.img
-        dic['userlevel'] = s.level
+        dic['userlevel'] = ''
         dic['_id'] = i['_id']
         dic['content'] = i['content']
         dic['pid'] = i['pid']
@@ -184,11 +173,9 @@ def sub_usercomment(course):
             print(i)
             user_id = i['user_id']
             u = User.objects.get(id=user_id)
-            m = Member.objects.get(user_id=u.id)
-            s = UserLevel.objects.get(id=m.level_id)
             dic['username'] = u.username
             dic['img'] = u.img
-            dic['userlevel'] = s.level
+            dic['userlevel'] = ''
             dic['_id'] = i['_id']
             dic['content'] = i['content']
             dic['pid'] = i['pid']
