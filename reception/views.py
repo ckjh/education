@@ -516,8 +516,6 @@ class UserInfoAPIView(APIView):
 
 # 会员订单
 class MemberOrderAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [JSONWebTokenAuthentication]
 
     def get(self, request):
         # 支付成功立即自动回调这个借口,会传回几个参数,其中我们取出订单号,流水号
