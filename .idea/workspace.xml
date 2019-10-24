@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="76a25ab0-ceb0-4052-a9a8-c04d5e8f29d7" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/reception/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/reception/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/utils/recursive_query.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/recursive_query.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/word_filter.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/word_filter.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -67,7 +67,7 @@
     <property name="DatabaseDriversLRU" value="mysql" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/utils" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../压缩包管理/first-project/first-project" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
     <property name="node.js.path.for.package.eslint" value="project" />
@@ -79,17 +79,18 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\86156\Desktop\education" />
+      <recent name="C:\Users\liguilindell\Desktop\education\reception" />
+      <recent name="C:\Users\86156\Desktop\education\admin01" />
+      <recent name="D:\ed\education\admin01" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\86156\Desktop\education\utils" />
       <recent name="C:\Users\86156\Desktop\education\reception" />
       <recent name="C:\Users\liguilindell\Desktop\education\utils" />
       <recent name="C:\Users\liguilindell\Desktop\education\reception" />
       <recent name="C:\Users\86156\Desktop\education" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\liguilindell\Desktop\education\reception" />
-      <recent name="C:\Users\86156\Desktop\education\admin01" />
-      <recent name="D:\ed\education\admin01" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -104,7 +105,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Django server.education">
+  <component name="RunManager" selected="Python.tests (1)">
     <configuration name="ceshi (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="education" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -310,7 +311,8 @@
       <workItem from="1571613063725" duration="33673000" />
       <workItem from="1571699006280" duration="42506000" />
       <workItem from="1571801711655" duration="3781000" />
-      <workItem from="1571811842191" duration="27725000" />
+      <workItem from="1571811842191" duration="28535000" />
+      <workItem from="1571873158882" duration="5162000" />
     </task>
     <servers />
   </component>
@@ -349,6 +351,6 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/education$cf.coverage" NAME="cf Coverage Results" MODIFIED="1571621549856" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/reception" />
     <SUITE FILE_PATH="coverage/education$tests.coverage" NAME="tests Coverage Results" MODIFIED="1570264902994" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/admin01" />
-    <SUITE FILE_PATH="coverage/education$tests__1_.coverage" NAME="tests (1) Coverage Results" MODIFIED="1571703058495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/reception" />
+    <SUITE FILE_PATH="coverage/education$tests__1_.coverage" NAME="tests (1) Coverage Results" MODIFIED="1571875330610" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/reception" />
   </component>
 </project>

@@ -13,13 +13,14 @@ def sub_comment(course):
 
     for i in c:
         dic = {}
+        print(i)
         user_id = i['user_id']
         u = User.objects.get(id=user_id)
-        m = Member.objects.get(user_id=u.id)
-        s = UserLevel.objects.get(id=m.level_id)
+        # m = Member.objects.get(user_id=u.id)
+        # s = UserLevel.objects.get(id=m.level_id)
         dic['username'] = u.username
         dic['img'] = u.img
-        dic['userlevel'] = s.level
+        # dic['userlevel'] = s.level
         dic['_id'] = i['_id']
         dic['content'] = i['content']
         dic['pid'] = i['pid']

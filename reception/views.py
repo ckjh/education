@@ -248,11 +248,15 @@ class ShowCoursesAPIView(APIView):
         if member != '-1': searchDict['member'] = member  # member 是否为会员课程，0 否 1 是 -1 全部
         try:
             dataList = Course.objects.filter(**searchDict).order_by(sort)
-            # dataList = CourseSerializersModel(dataList, many=True)
-            # ret['dataList'] = dataList.data
             # 解决首页加载慢的问题
-            dataList = [{'id': item.id, 'title': item.title, 'pic': item.pic, 'learn': item.learn} for item in dataList]
-            ret['dataList'] = dataList
+            if tag == '99':
+                dataList = CourseSerializersModel(dataList, many=True)
+                ret['dataList'] = dataList.data
+
+            else:
+                dataList = [{'id': item.id, 'title': item.title, 'pic': item.pic, 'learn': item.learn} for item in
+                            dataList]
+                ret['dataList'] = dataList
             ret['code'] = 200
             ret['message'] = '成功'
         except Exception as ex:
@@ -722,7 +726,7 @@ class OrderRecordAPIView(APIView):
             conn.expire('courseOrder' + data['order_number'], 600)  # 设置过期时间未600秒,就是 600秒内不支付 订单消失
         else:
             ret['code'] = 1000
-            ret['order_number'] = data['order_number']
+            # ret['order_number'] = data['order_number']
             ret['message'] = "订单信息错误"
 
         return Response(ret)
@@ -822,14 +826,17 @@ class SubmitAddComment(APIView):
         c = []
         try:
             if course_id:
+                print('课程评论查询中', course_id)
                 c = sub_comment(course_id)
+
             elif quest_id:
                 c = sub_questdetail(quest_id)
                 print('================++++++++++++++')
                 print(c, '=================================')
             ret['code'] = 200
             ret['message'] = 'ok'
-        except:
+        except Exception as e:
+            print(e)
             ret['code'] = 601
             ret['message'] = '失败'
         print(ret)
