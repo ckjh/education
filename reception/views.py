@@ -488,7 +488,7 @@ class UserInfoAPIView(APIView):
 
     def put(self, request):
         mes = {}
-        data = request.data.copy()
+        data = request.data
         print(data)
         user = User.objects.get(id=data['user_id'])
         # 如果用户输了密码

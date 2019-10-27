@@ -59,6 +59,7 @@ class Video(APIView):
         mes['errno'] = 0
         mes['data'] = [video]
         mes['url'] = video
+        print(mes)
         return Response(mes)
 
 
@@ -952,6 +953,8 @@ class RedisSearch(APIView):
         print('数据添加完毕————————————————————————————————')
         print(client.info())
         # 查找搜索
+        client = Client('CII' + str(datetime.now()), host=settings.SIP, port='6666')
+
         res = client.search(search_key)
         print('查询结束————————————————————————————————————————————————')
         id_list = []
